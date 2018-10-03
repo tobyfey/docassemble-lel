@@ -9,7 +9,7 @@ from docassemble.base.functions import word
 from .airtable import Airtable
 ```
 
-{% highlight yaml %}
+```yaml
 metadata:
   title: Eviction Fighter
   short title: evictionfighter
@@ -26,18 +26,18 @@ imports:
   - yaml
   - json
 ---
-{% endhighlight %}
+```
 
 ### Variables 
 
-{% highlight python %}
+```python
 base_key = 'appA5wMpmdl4Vo8Kb'
 api_key=get_config('airtable api key')
-{% endhighlight %}
+```
 
 ### Objects
 
-{% highlight yaml %}
+```yaml
 objects:
   - parentlegalobjects: LegalObjectList
   - relevantlegalobjects: LegalObjectList.using(object_type=LegalObject,auto_gather=False)
@@ -49,11 +49,11 @@ objects:
   - x.children: LegalObjectList.using(object_type=LegalObject,auto_gather=False)
   - x.facts: FactObjectList.using(object_type=FactObject,auto_gather=False)
 ---
-{% endhighlight %}
+```
 
 ## Selecting Legal Action
 
-{% highlight yaml %}
+```yaml
 mandatory: True
 code: |
   parentlegalobjects.auto_gather = False
@@ -63,9 +63,9 @@ code: |
     relevantlegalobjects.append(relevantlegalobject,set_instance_name=True)
   relevantlegalobjects.gathered = True
 ---
-{% endhighlight %}
+```
 
-{% highlight yaml %}
+```yaml
 question: Type of Housing
 field: typeofhousing
 default: A1 Private Housing
@@ -79,9 +79,9 @@ choices:
   - A7 Rural Housing Service Projects
   - A8 Public Housing
 ---
-{% endhighlight %}
+```
 
-{% highlight yaml %}
+```yaml
 question: What do you need help with?
 fields:
   - I need help with: relevantlegalobject
@@ -135,11 +135,11 @@ code: |
     counter += 1
   parentlegalobjects.gathered = True
 ---
-{% endhighlight %}
+```
 
 ## Building Children Elements
 
-{% highlight python %}
+```python
 def object_from_a_id(a_id):
 	funcobject = LegalObject()
 	table_name = 'Elements'
@@ -204,11 +204,11 @@ def object_from_a_id(a_id):
 	if 'conclusion' in el['fields']:
 		funcobject.conclusion = el['fields']['conclusion']
 	return funcobject
-{% endhighlight %}
+```
 
 ### Type Of Housing Filter
 
-{% highlight yaml %}
+```yaml
 generic object: LegalObject
 code: |
   for atid in x.childrenlist:
@@ -228,11 +228,11 @@ code: |
       x.facts.append(fact_from_a_id(fid),set_instance_name=True)
     x.facts.there_is_another = False
 ---
-{% endhighlight %}
+```
 
 ## Asking Which Children Elements Are Relevant
 
-{% highlight yaml %}
+```yaml
 generic object: LegalObject
 question:  ${ x.label }
 subquestion: |
@@ -249,11 +249,11 @@ fields:
     datatype: checkboxes
     code: x.questioncode()
 ---
-{% endhighlight %}
+```
 
 ## Not really sure what this does
 
-{% highlight yaml %}
+```yaml
 generic object: LegalObject
 sets: x.children[0].isrelevant
 code: |
@@ -263,11 +263,11 @@ code: |
     else:
       chi.isrelevant = True
 ---
-{% endhighlight %}
+```
 
 ## Setting ismet based on children and facts
 
-{% highlight yaml %}
+```yaml
 generic object: LegalObject
 code: |
   if not hasattr(x, 'factslist') or x.facts.ismet:
@@ -278,11 +278,11 @@ code: |
 	else:
 		x.ismet = False
 ---
-{% endhighlight %}
+```
 
 ### .ismet based on any_or_all
 
-{% highlight python %}
+```python
 class LegalObjectList(DAList):
 
 	def is_met(self):
@@ -308,11 +308,11 @@ class LegalObjectList(DAList):
 			if counter == len(self):
 				return True
 			return False
-{% endhighlight %}
+```
 
 ### ismet based on List
 
-{% highlight yaml %}
+```yaml
 generic object: LegalObjectList
 code: |
   counter = 0
@@ -327,11 +327,11 @@ code: |
     x.ismet = False
 	
 ---
-{% endhighlight %}
+```
 
 ### ismet in class?
 
-{% highlight python %}
+```python
 class LegalObject(DAObject):
 	def ___init___(self, *pargs, **kwargs):
 		self.initializeAttribute('children', LegalObjectList.using(object_type=LegalObject))
@@ -361,17 +361,17 @@ class LegalObject(DAObject):
 				adict[u'default'] = child.default
 			questioncode.append(adict)
 		return questioncode
-{% endhighlight %}
+```
 
-{% highlight python %}
+```python
 class FactObject(DAObject):
 	def ___init___(self, *pargs, **kwargs):
 		self.initializeAttribute('children', LegalObjectList.using(object_type=LegalObject))
 		return super(LegalObject, self).init(*pargs, **kwargs)
 
-{% endhighlight %}
+```
 
-{% highlight python %}
+```python
 def fact_from_a_id(a_id):
 	funcobject = FactObject()
 	table_name = 'Facts'
@@ -406,10 +406,10 @@ def fact_from_a_id(a_id):
 	if 'explanationifnotmet' in el['fields']:
 		funcobject.explanationifnotmet = el['fields']['explanationifnotmet']
 	return funcobject
-{% endhighlight %}
+```
 
 
-{% highlight yaml %}
+```yaml
 generic object: FactObjectList
 sets: x[0]
 question:  ${ x.label }
@@ -426,9 +426,9 @@ subquestion: |
 fields:
   code: x.questioncode()
 ---
-{% endhighlight %}
+```
 
-{% highlight python %}
+```python
 class FactObjectList(DAList):
 
 	def questioncode(self):
@@ -468,9 +468,9 @@ class FactObjectList(DAList):
 				return True
 			else:
 				return False
-{% endhighlight %}
+```
 
-{% highlight yaml %}
+```yaml
 generic object: FactObjectList
 sets:
   - x.ismet
@@ -514,9 +514,9 @@ code: |
     else:
       x.ismet = True
 ---
-{% endhighlight %}
+```
 
-{% highlight yaml %}
+```yaml
 question: Questions for the Caption
 fields:
   - Name of Court in All Caps: courtNameAC
@@ -549,17 +549,17 @@ fields:
   - Lawyer City State Zip: lawyercitystatezip
     default: Suburbs, OH 43666
 ---
-{% endhighlight %}
+```
 
-{% highlight python %}
+```python
 class EvidenceList(DAList):
 	def ___init___(self, *pargs, **kwargs):
 		self.initializeAttribute('children', LegalObjectList.using(object_type=LegalObject))
 		return super(LegalObject, self).init(*pargs, **kwargs)
 
-{% endhighlight %}
+```
 
-{% highlight yaml %}
+```yaml
 mandatory: True
 question: Summary 
 subquestion: |
@@ -637,5 +637,5 @@ attachment:
     filename: EvictionAnswer
     content file:
       - answer.md
-{% endhighlight %}
+```
 
