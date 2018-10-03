@@ -60,6 +60,23 @@ objects:
 ```
 The classes of Legal Objects are also defined in legalobject.py
 
+### Auto Gather
+
+Objects that are in the class DAList have an automatic gathering system, where the interview will ask if there are any members of the list or if there is another.  To avoid this feature, objects have to have auto.gather set to False.
+
+```yaml
+mandatory: True
+code: |
+  parentlegalobjects.auto_gather = False
+  relevantlegalobjects.auto_gather = False
+  if relevantlegalobject:
+    relevantlegalobject.isrelevant = True
+    relevantlegalobjects.append(relevantlegalobject,set_instance_name=True)
+  relevantlegalobjects.gathered = True
+---
+```
+
+
 ## Establishing Jurisdiction
 
 First, we must answer the questions that will determine what law applies for a specific case, or, in other words, what set of legal objects are relevant.  These questions will determine the state and local jurisdiction and the type of housing, which will determine what rules and laws apply to a particular user.
@@ -107,20 +124,12 @@ code: |
 
 
 ## Selecting Legal Action
-Once we have our set
+Once we have the jurisdiction set, the
 
+This question uses the "datatype: object" type of question, which allows you to pick an object. 
 
-```yaml
-mandatory: True
-code: |
-  parentlegalobjects.auto_gather = False
-  relevantlegalobjects.auto_gather = False
-  if relevantlegalobject:
-    relevantlegalobject.isrelevant = True
-    relevantlegalobjects.append(relevantlegalobject,set_instance_name=True)
-  relevantlegalobjects.gathered = True
----
-```
+The interview makes a set of all legal objects whose parent attribute = 'parent' and is marked as active.  It then builds the attribute of the object from the AirTable fields.
+
 
 ```yaml
 question: What do you need help with?
@@ -179,6 +188,8 @@ code: |
 ```
 
 ## Building Children Elements
+
+The function object_from_a_id sets the attributes for a legal object based on AirTable fields.  The function takes the id number for a row in AirTable.  (It can be tricky to figure out what the id is - I should look into if there is an easier way.
 
 ```python
 def object_from_a_id(a_id):
