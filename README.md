@@ -2,12 +2,12 @@
 ## Intro Blocks 
 ### Imports and Metadata
 
-{% highlight python %}
+```python
 from docassemble.base.core import DAObject, DAList
 from docassemble.base.util import get_config
 from docassemble.base.functions import word
 from .airtable import Airtable
-{% endhighlight %}
+```
 
 {% highlight yaml %}
 metadata:
