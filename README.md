@@ -2,13 +2,6 @@
 ## Intro Blocks 
 ### Imports and Metadata
 
-```python
-from docassemble.base.core import DAObject, DAList
-from docassemble.base.util import get_config
-from docassemble.base.functions import word
-from .airtable import Airtable
-```
-
 ```yaml
 metadata:
   title: Eviction Fighter
@@ -27,8 +20,19 @@ imports:
   - json
 ---
 ```
+Libraries are also imported in legalobject.py
+
+```python
+from docassemble.base.core import DAObject, DAList
+from docassemble.base.util import get_config
+from docassemble.base.functions import word
+from .airtable import Airtable
+```
+
 
 ### Variables 
+
+Two static variables used for accessing the AirTable are set in legalobject.py.  The airtable api key is set in the config file.  (When I tried to make this variable with underscores instead of spaces, it didn't work.)
 
 ```python
 base_key = 'appA5wMpmdl4Vo8Kb'
@@ -36,6 +40,10 @@ api_key=get_config('airtable api key')
 ```
 
 ### Objects
+
+The foundation of the Legal Elements Library is the use of Legal Objects.  The Eviction Fighter asks questions to determine what Legal Elements/Objects are relevant, then provides information stored as structured data in the relevant Legal Objects.
+
+The Legal Objects are listed in legalobject.yml.  We can also set attributes of Legal Objects to special classes of Legal Objects by using generic objects.
 
 ```yaml
 objects:
@@ -50,20 +58,17 @@ objects:
   - x.facts: FactObjectList.using(object_type=FactObject,auto_gather=False)
 ---
 ```
+The classes of Legal Objects are also defined in legalobject.py
 
-## Selecting Legal Action
+## Establishing Jurisdiction
 
-```yaml
-mandatory: True
-code: |
-  parentlegalobjects.auto_gather = False
-  relevantlegalobjects.auto_gather = False
-  if relevantlegalobject:
-    relevantlegalobject.isrelevant = True
-    relevantlegalobjects.append(relevantlegalobject,set_instance_name=True)
-  relevantlegalobjects.gathered = True
----
-```
+First, we must answer the questions that will determine what law applies for a specific case, or, in other words, what set of legal objects are relevant.  These questions will determine the state and local jurisdiction and the type of housing, which will determine what rules and laws apply to a particular user.
+
+This first version is made for Ohio law.  When we expand, we will add a question to determine location.
+
+Currently, we only have a simple list of housing types.  The same list makes the options for the 'typeofhousing' field in the AirTable.
+
+This section can also be reworked so [typeofhousing] is set with a series of easy to use questions.
 
 ```yaml
 question: Type of Housing
@@ -78,6 +83,42 @@ choices:
   - A6 Project-Based Certificate Projects
   - A7 Rural Housing Service Projects
   - A8 Public Housing
+---
+```
+
+### Type Of Housing Filter
+
+The filtering for type of housing occurs when the children legal objects are appended to the LegalObjectList.
+
+Couldn't the filter happen when the parent object is gathered?  
+
+```yaml
+generic object: LegalObject
+code: |
+  for atid in x.childrenlist:
+    tempobject = object_from_a_id(atid)
+    if tempobject.active:
+      if typeofhousing in tempobject.typeofhousing:
+        x.children.append(tempobject,set_instance_name=True)
+  x.children.gathered = True
+---
+```
+
+
+
+## Selecting Legal Action
+Once we have our set
+
+
+```yaml
+mandatory: True
+code: |
+  parentlegalobjects.auto_gather = False
+  relevantlegalobjects.auto_gather = False
+  if relevantlegalobject:
+    relevantlegalobject.isrelevant = True
+    relevantlegalobjects.append(relevantlegalobject,set_instance_name=True)
+  relevantlegalobjects.gathered = True
 ---
 ```
 
@@ -205,19 +246,9 @@ def object_from_a_id(a_id):
 		funcobject.conclusion = el['fields']['conclusion']
 	return funcobject
 ```
-
-### Type Of Housing Filter
+### Generating Fact Children
 
 ```yaml
-generic object: LegalObject
-code: |
-  for atid in x.childrenlist:
-    tempobject = object_from_a_id(atid)
-    if tempobject.active:
-      if typeofhousing in tempobject.typeofhousing:
-        x.children.append(tempobject,set_instance_name=True)
-  x.children.gathered = True
----
 generic object: LegalObject
 sets: 
   - x.facts
