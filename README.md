@@ -4,10 +4,9 @@ title: Eviction Fighter and Legal Elements Library Code Walkthrough
 short_title: Walkthrough
 ---
 
-
-# <a name="lel code"></a>LEL Code
+LEL Code
 ## <a name="initial blocks"></a>Initial Blocks 
-### <a name="imports and metadata"></a>Imports and Metadata
+## <a name="imports and metadata"></a>Imports and Metadata
 
 ```yaml
 metadata:
