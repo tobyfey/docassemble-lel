@@ -1,6 +1,13 @@
-# LEL Code
-## Intro Blocks 
-### Imports and Metadata
+---
+layout: docs
+title: Eviction Fighter and Legal Elements Library Code Walkthrough
+short_title: Walkthrough
+---
+
+
+#<a name="lel code"></a> LEL Code
+##<a name="initial blocks"></a> Initial Blocks 
+###<a name="imports and metadata"></a> Imports and Metadata
 
 ```yaml
 metadata:
@@ -189,7 +196,9 @@ code: |
 
 ## Building Children Elements
 
-The function object_from_a_id sets the attributes for a legal object based on AirTable fields.  The function takes the id number for a row in AirTable.  (It can be tricky to figure out what the id is - I should look into if there is an easier way.
+The function object_from_a_id sets the attributes for a legal object based on AirTable fields.  The function takes the id number for a row in AirTable.  (It can be tricky to figure out what the id is - I should look into if there is an easier way.)
+
+Notice that some of the fields set attributes of funcobject.facts, instead of setting attributes of funcobject itself.  funcobject.facts is also initialized as a FactObjectList if a certain attribute (follabel) is found.
 
 ```python
 def object_from_a_id(a_id):
@@ -226,7 +235,7 @@ def object_from_a_id(a_id):
 	if 'facts' in el['fields']:
 		funcobject.factslist = el['fields']['facts']
 	if 'parent' in el['fields']:
-		funcobject.parent = el['fields']['parent'][0]
+		funcobject.parent = el['fields']['parent']
 	if 'question' in el['fields']:
 		funcobject.question = el['fields']['question']
 	if 'explanation' in el['fields']:
@@ -259,6 +268,8 @@ def object_from_a_id(a_id):
 ```
 ### Generating Fact Children
 
+If a LegalObject has a facts attribute, after the LegalObject is added in the above block, then FactObjects are added to the LegalObject's FactObjectList with the following block.
+
 ```yaml
 generic object: LegalObject
 sets: 
@@ -273,6 +284,8 @@ code: |
 ```
 
 ## Asking Which Children Elements Are Relevant
+
+This block produces a question screen for users to determine if the children LegalObjects are relevant.
 
 ```yaml
 generic object: LegalObject
@@ -292,8 +305,27 @@ fields:
     code: x.questioncode()
 ---
 ```
+The method x.questioncode is defined in legalobject.py for the class LegalObject.  The method pulls information from attributes of the LegalObject children for the question.
 
-## Not really sure what this does
+```python
+class LegalObject(DAObject):
+
+	def questioncode(self):
+		questioncode = []
+		for child in self.children:
+			adict = {}
+			adict[child.id] = child.label
+			if hasattr(child,'help'):
+				adict[u'help'] = child.help
+			if hasattr(child,'default'):
+				adict[u'default'] = child.default
+			questioncode.append(adict)
+		return questioncode
+```
+
+## Converting the dict of relevant children to object attributes
+
+This is what causes .isrelevant to seem backwards - the user picks a child legal object to investigate by unclicking the checkbox, rather than clicking it.
 
 ```yaml
 generic object: LegalObject
@@ -391,19 +423,9 @@ class LegalObject(DAObject):
 				return False
 		else:
 			return False
-
-	def questioncode(self):
-		questioncode = []
-		for child in self.children:
-			adict = {}
-			adict[child.id] = child.label
-			if hasattr(child,'help'):
-				adict[u'help'] = child.help
-			if hasattr(child,'default'):
-				adict[u'default'] = child.default
-			questioncode.append(adict)
-		return questioncode
 ```
+
+
 
 ```python
 class FactObject(DAObject):
@@ -557,6 +579,7 @@ code: |
       x.ismet = True
 ---
 ```
+## Information for the pleading
 
 ```yaml
 question: Questions for the Caption
