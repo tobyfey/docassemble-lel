@@ -5,8 +5,8 @@ short_title: Walkthrough
 ---
 
 LEL Code
-## <a name="initial blocks"></a>Initial Blocks 
-## <a name="imports and metadata"></a>Imports and Metadata
+# <a name="initial blocks"></a>Initial Blocks 
+# <a name="imports and metadata"></a>Imports and Metadata
 
 ```yaml
 metadata:
