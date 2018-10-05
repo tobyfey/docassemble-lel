@@ -132,6 +132,8 @@ code: |
 ## Selecting Legal Action
 Once we have the jurisdiction set, the
 
+![alt text](\img\parentlegalobject.jpg "Example for Parent Legal Object"
+)
 This question uses the "datatype: object" type of question, which allows you to pick an object. 
 
 The interview makes a set of all legal objects whose parent attribute = 'parent' and is marked as active.  It then builds the attribute of the object from the AirTable fields.
