@@ -1,8 +1,4 @@
----
-layout: docs
-title: Eviction Fighter and Legal Elements Library Code Walkthrough
-short_title: Walkthrough
----
+README.md gh-pages is the main place I am working
 
 
 # <a name="lel code"></a>LEL Code
