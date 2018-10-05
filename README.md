@@ -49,20 +49,37 @@ api_key=get_config('airtable api key')
 
 The foundation of the Legal Elements Library is the use of Legal Objects.  The Eviction Fighter asks questions to determine what Legal Elements/Objects are relevant, then provides information stored as structured data in the relevant Legal Objects.
 
+The sets and lists are for collecting the legalobjects that are "met" and have information in attributes that should be used.  During the interview, the objects are collected in sets to avoid duplicate objects.  Before the documents are generated, the sets are sorted into lists.
+
 The Legal Objects are listed in legalobject.yml.  We can also set attributes of Legal Objects to special classes of Legal Objects by using generic objects.
 
 ```yaml
 objects:
-  - parentlegalobjects: LegalObjectList
-  - relevantlegalobjects: LegalObjectList.using(object_type=LegalObject,auto_gather=False)
-  - relevantnotmetlegalobjects: LegalObjectList
-  - childrendict: DADict
+  - legalobjects: LegalObjectList.using(object_type=LegalObject,auto_gather=False)
+  - answerset: DASet
+  - answerlist: DAList
+  - defensesset: DASet
+  - defenseslist: DAList
+  - remediesset: DASet
+  - remedieslist: DAList
+  - exhibitset: DASet
+  - exhibitlist: DAList
+  - affidavitset: DASet
+  - affidavitlist: DAList
+  - findingsoffactset: DASet
+  - findingsoffactlist: DAList
+  - conclusionsoflawset: DASet
+  - conclusionsoflawlist: DAList
+  - toolsset: DASet
+  - toolslist: DAList
 ---
 generic object: LegalObject
 objects:
   - x.children: LegalObjectList.using(object_type=LegalObject,auto_gather=False)
   - x.facts: FactObjectList.using(object_type=FactObject,auto_gather=False)
 ---
+generic object: FactObject
+  - x.evidence: EvidenceList.using(object_type=Evidence,auto_gather=False)
 ```
 The classes of Legal Objects are also defined in legalobject.py
 ### TODO
@@ -76,12 +93,23 @@ Objects that are in the class DAList have an automatic gathering system, where t
 ```yaml
 mandatory: True
 code: |
-  parentlegalobjects.auto_gather = False
-  relevantlegalobjects.auto_gather = False
-  if relevantlegalobject:
-    relevantlegalobject.isrelevant = True
-    relevantlegalobjects.append(relevantlegalobject,set_instance_name=True)
-  relevantlegalobjects.gathered = True
+  legalobjects.auto_gather = False
+  - answerset: DASet
+  - answerlist: DAList
+  - defensesset: DASet
+  - defenseslist: DAList
+  - remediesset: DASet
+  - remedieslist: DAList
+  - exhibitset: DASet
+  - exhibitlist: DAList
+  - affidavitset: DASet
+  - affidavitlist: DAList
+  - findingsoffactset: DASet
+  - findingsoffactlist: DAList
+  - conclusionsoflawset: DASet
+  - conclusionsoflawlist: DAList
+  - toolsset: DASet
+  - toolslist: DAList
 ---
 ```
 
