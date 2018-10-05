@@ -341,6 +341,8 @@ code: |
 
 ## Setting ismet based on children and facts
 
+This block sets .ismet for an object based on both its LegalObject children and FactObject children.  Since the final screen needs to know if a relevant legal object is met, this block makes docassemble find
+
 ```yaml
 generic object: LegalObject
 code: |
@@ -349,12 +351,14 @@ code: |
       x.ismet = True
     else:
       x.ismet = False
-	else:
-		x.ismet = False
+  else:
+    x.ismet = False
 ---
 ```
 
 ### .ismet based on any_or_all
+
+A LegalObjectList has an any
 
 ```python
 class LegalObjectList(DAList):
@@ -434,6 +438,8 @@ class FactObject(DAObject):
 		return super(LegalObject, self).init(*pargs, **kwargs)
 
 ```
+## Building Fact Objects
+FactObjects are populated from a different AirTable than Elements.
 
 ```python
 def fact_from_a_id(a_id):
@@ -471,7 +477,11 @@ def fact_from_a_id(a_id):
 		funcobject.explanationifnotmet = el['fields']['explanationifnotmet']
 	return funcobject
 ```
+## Asking Fact Questions
 
+This question will ask whether 
+
+Fact questions can have different kinds of datatypes as inputs, unlike LegalObject children questions which are yes and no questions.
 
 ```yaml
 generic object: FactObjectList
@@ -491,6 +501,7 @@ fields:
   code: x.questioncode()
 ---
 ```
+
 
 ```python
 class FactObjectList(DAList):
@@ -533,6 +544,14 @@ class FactObjectList(DAList):
 			else:
 				return False
 ```
+## Fact .ismet
+
+This section has the different ways a fact object 
+
+1. Equals - if two
+1. 2AllTrue
+1. 1AllTrue
+1. 3AllTrue
 
 ```yaml
 generic object: FactObjectList
@@ -623,6 +642,8 @@ class EvidenceList(DAList):
 		return super(LegalObject, self).init(*pargs, **kwargs)
 
 ```
+## Summary Block
+The mandatory summary block
 
 ```yaml
 mandatory: True
