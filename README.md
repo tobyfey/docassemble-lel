@@ -6,7 +6,7 @@ short_title: Walkthrough
 
 LEL Code
 # <a name="initial blocks"></a>Initial Blocks 
-# <a name="imports and metadata"></a>Imports and Metadata
+## <a name="imports and metadata"></a>Imports and Metadata
 
 ```yaml
 metadata:
@@ -36,7 +36,7 @@ from .airtable import Airtable
 ```
 
 
-### Variables 
+## Variables 
 
 Two static variables used for accessing the AirTable are set in legalobject.py.  The airtable api key is set in the config file.  (When I tried to make this variable with underscores instead of spaces, it didn't work.)
 
@@ -45,7 +45,7 @@ base_key = 'appA5wMpmdl4Vo8Kb'
 api_key=get_config('airtable api key')
 ```
 
-### Objects
+## Objects
 
 The foundation of the Legal Elements Library is the use of Legal Objects.  The Eviction Fighter asks questions to determine what Legal Elements/Objects are relevant, then provides information stored as structured data in the relevant Legal Objects.
 
@@ -65,7 +65,10 @@ objects:
 ---
 ```
 The classes of Legal Objects are also defined in legalobject.py
-
+### TODO
+1. relevantnotmetlegalobjects isn't used, i think
+1. Wouldn't it be better to have one legalobjects list
+1. Add sets to collect information for pleadings
 ### Auto Gather
 
 Objects that are in the class DAList have an automatic gathering system, where the interview will ask if there are any members of the list or if there is another.  To avoid this feature, objects have to have auto.gather set to False.
