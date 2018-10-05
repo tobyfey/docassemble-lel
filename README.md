@@ -133,6 +133,14 @@ code: |
 Once we have the jurisdiction set, the
 
 <img width="600" src="img/parentlegalobject.jpg">
+<img width="600" src="img/airtableelements1.jpg">
+<img width="600" src="img/airtableelements2.jpg">
+<img width="600" src="img/airtableelements3.jpg">
+<img width="600" src="img/captionquestions.jpg">
+
+<img width="600" src="img/legalobjectchildrenquestion.jpg">
+<img width="600" src="img/legalobjectchildrenquestion2.jpg">
+
 
 This question uses the "datatype: object" type of question, which allows you to pick an object. 
 
@@ -435,6 +443,10 @@ class FactObject(DAObject):
 		return super(LegalObject, self).init(*pargs, **kwargs)
 
 ```
+## Facts from the Airtable
+
+
+<img width="600" src="img/airtablefacts.jpg">
 
 ```python
 def fact_from_a_id(a_id):
@@ -472,7 +484,9 @@ def fact_from_a_id(a_id):
 		funcobject.explanationifnotmet = el['fields']['explanationifnotmet']
 	return funcobject
 ```
+## Fact Object Questions
 
+<img width="600" src="img/factobjectquestion.jpg">
 
 ```yaml
 generic object: FactObjectList
@@ -624,6 +638,10 @@ class EvidenceList(DAList):
 		return super(LegalObject, self).init(*pargs, **kwargs)
 
 ```
+## Summary question
+The final summary block drives the entire docassemble interview.  The rest of the questions are used to determine the variables listed in this question.
+
+<img width="600" src="img/summary.jpg">
 
 ```yaml
 mandatory: True
@@ -704,7 +722,3 @@ attachment:
     content file:
       - answer.md
 ```
-
-# <a name="lel code"></a>LEL Code
-## <a name="initial blocks"></a>Initial Blocks 
-### <a name="imports and metadata"></a>Imports and Metadata
