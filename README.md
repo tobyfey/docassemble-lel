@@ -132,7 +132,7 @@ code: |
 ## Selecting Legal Action
 Once we have the jurisdiction set, the
 
-<img "width="600" src="img/parentlegalobject.jpg">
+<img width="600" src="img/parentlegalobject.jpg">
 
 This question uses the "datatype: object" type of question, which allows you to pick an object. 
 
