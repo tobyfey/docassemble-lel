@@ -133,14 +133,6 @@ code: |
 Once we have the jurisdiction set, the
 
 <img width="600" src="img/parentlegalobject.jpg">
-<img width="600" src="img/airtableelements1.jpg">
-<img width="600" src="img/airtableelements2.jpg">
-<img width="600" src="img/airtableelements3.jpg">
-<img width="600" src="img/captionquestions.jpg">
-
-<img width="600" src="img/legalobjectchildrenquestion.jpg">
-<img width="600" src="img/legalobjectchildrenquestion2.jpg">
-
 
 This question uses the "datatype: object" type of question, which allows you to pick an object. 
 
@@ -275,6 +267,8 @@ def object_from_a_id(a_id):
 		funcobject.conclusion = el['fields']['conclusion']
 	return funcobject
 ```
+<img width="600" src="img/airtableelements1.jpg">
+
 ### Generating Fact Children
 
 If a LegalObject has a facts attribute, after the LegalObject is added in the above block, then FactObjects are added to the LegalObject's FactObjectList with the following block.
@@ -296,6 +290,8 @@ code: |
 
 This block produces a question screen for users to determine if the children LegalObjects are relevant.
 
+<img width="600" src="img/legalobjectchildrenquestion.jpg">
+
 ```yaml
 generic object: LegalObject
 question:  ${ x.label }
@@ -314,6 +310,10 @@ fields:
     code: x.questioncode()
 ---
 ```
+Here is an example of asking if the children of a child legal object are relevant.
+
+<img width="600" src="img/legalobjectchildrenquestion2.jpg">
+
 The method x.questioncode is defined in legalobject.py for the class LegalObject.  The method pulls information from attributes of the LegalObject children for the question.
 
 ```python
@@ -595,6 +595,8 @@ code: |
 ---
 ```
 ## Information for the pleading
+
+<img width="600" src="img/captionquestions.jpg">
 
 ```yaml
 question: Questions for the Caption
