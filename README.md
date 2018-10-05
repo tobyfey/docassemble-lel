@@ -132,8 +132,7 @@ code: |
 ## Selecting Legal Action
 Once we have the jurisdiction set, the
 
-![alt text](img/parentlegalobject.jpg "Example for Parent Legal Object" | "width"=100)
-<img align="left" width="100" height="100" src="img/parentlegalobject.jpg">
+<img align="left" width="200" src="img/parentlegalobject.jpg">
 
 This question uses the "datatype: object" type of question, which allows you to pick an object. 
 
