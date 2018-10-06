@@ -620,7 +620,13 @@ class EvidenceList(DAList):
 	def evexplanation(self)
 
 ```
+# Remedies
 
+```markdown
+For the above, reasons, Defendant requests that:[NEWLINE]
+1. Plaintiff's Complaint be dismissed, at Plaintiff's cost,[NEWLINE]
+2. and any other appropriate remedies.[NEWLINE]
+```
 
 # Summary Screen and Documents
 - Stuff should be added to sets if a LegalObject is met.  When, where do I do that?
@@ -690,22 +696,8 @@ fields:
   - Title: title
     default: Answer
 ---
-question: Questions for the Signature
-fields:
-  - Defendant street address: defendantstreetaddress
-    default: 123 Main St.
-  - Defendant City State Zip: defendantcitystatezip
-    default: Default, OH 43611
-  - Defendant Phone Number: defendantphonenumber
-    required: False
-  - Lawyer: lawyer
-    default: Larry Lawyer
-  - Lawyer street address: lawyerstreetaddress 
-    default: 321 High St.
-  - Lawyer City State Zip: lawyercitystatezip
-    default: Suburbs, OH 43666
----
 ```
+
 ```markdown
 ---
 "FirstFooterLeft": |-
@@ -759,3 +751,44 @@ Defendant is low-income and unable to afford an attorney, and has not been able 
 Unless Defendant specifically admits the allegations made by Plaintiff in the Complaint, Defendant denies the allegations in the Complaint.
 ```
 
+### Signature
+
+```markup
+[INDENTBY 3in][BLANK]  
+${ defendant }, Pro Se Defendant  
+${ defendantstreetaddress }  
+${ defendantcitystatezip }  
+% if defendantphonenumber:
+${ defendantphonenumber }[NEWLINE]
+% endif
+
+[BOLDCENTER] PROOF OF SERVICE
+
+On the date of [BLANKFILL]  (month/day/year), a copy of this ${ title } was mailed by U.S. regular mail, postage prepaid, to ${ lawyer }, ${ lawyerstreetaddress }, ${ lawyercitystatezip }.
+
+[INDENTBY 3in][BLANK] [NEWLINE]
+
+[INDENTBY 3in]${ defendant }, Pro Se Defendant
+
+
+This document was created using Eviction Fighter, an online tool for self-represented litigants.
+```
+These variables should be changed to attributes of DAObjects like [Person.](https://docassemble.org/docs/objects.html#tocAnchor-1-20-3)  
+
+```yaml
+question: Questions for the Signature
+fields:
+  - Defendant street address: defendantstreetaddress
+    default: 123 Main St.
+  - Defendant City State Zip: defendantcitystatezip
+    default: Default, OH 43611
+  - Defendant Phone Number: defendantphonenumber
+    required: False
+  - Lawyer: lawyer
+    default: Larry Lawyer
+  - Lawyer street address: lawyerstreetaddress 
+    default: 321 High St.
+  - Lawyer City State Zip: lawyercitystatezip
+    default: Suburbs, OH 43666
+---
+```
