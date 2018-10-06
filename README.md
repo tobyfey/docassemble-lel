@@ -620,9 +620,67 @@ class EvidenceList(DAList):
 	def evexplanation(self)
 
 ```
-# Remedies
+## Answer
 
 ```markdown
+[BOLDCENTER] ANSWER
+
+Unless Defendant specifically admits the allegations made by Plaintiff in the Complaint, Defendant denies the allegations in the Complaint.
+
+
+% if relevantlegalobjects[0].children[0].isrelevant and not relevantlegalobjects[0].children[0].ismet:
+1. Defendant denies that Plaintiff has standing to file this eviction action.[NEWLINE]
+% else:
+1. Defendant admits that Plaintiff has standing to file this eviction action.[NEWLINE]
+% endif
+
+% if relevantlegalobjects[0].children[1].isrelevant and not relevantlegalobjects[0].children[1].ismet:
+1. Defendant denies that Defendant unlawfully and forcibly detains from Plaintiff possession of the described premises.  Defendant lawfully retains possession of the premises because Plaintiff does not have valid grounds to evict.[NEWLINE]
+% else:
+1. Defendant admits that Plaintiff has a valid reason to evict, but should not be granted an eviction for other reasons.[NEWLINE]
+% endif
+
+% if relevantlegalobjects[0].children[2].isrelevant and not relevantlegalobjects[0].children[2].ismet:
+1. Defendant denies that Plaintiff served a valid notice to vacate.[NEWLINE]
+% else:
+1. Defendant admits that Plaintiff served a notice to vacate, but Defendant denies that Plaintiff had a valid reason to do so.[NEWLINE]
+% endif
+
+```
+
+
+## Affirmative Defenses
+
+```markdown
+% if len(metlegalobject) > 0):
+
+[BOLDCENTER] AFFIRMATIVE DEFENSES
+% if len(metlegalobject) = 1):
+Defendant incorporates all prior paragraphs in the following defense.
+% else:
+Defendant incorporates all prior paragraphs in the following defense.
+% endif
+% for legalobject in metlegalobjects:
+[BOLDCENTER] AFFIRMATIVE DEFENSE ${ legalobject.indexnumber }
+[BOLDCENTER} ${ legalobject.title }
+
+1. ${ legalobject.law }
+% for fact in legalobject.facts:
+1. ${ fact.prefact }${ fact.description }${ fact.postfact }
+% for evidence in legalobject.evidencelist:
+${ fact.exhibit }
+% endfor
+% endfor
+1. ${ legalobject.conclusion }
+% endfor
+% endif
+```
+
+## Remedies
+
+```markdown
+[BOLDCENTER] DEMAND FOR JUDGMENT
+
 For the above, reasons, Defendant requests that:[NEWLINE]
 1. Plaintiff's Complaint be dismissed, at Plaintiff's cost,[NEWLINE]
 2. and any other appropriate remedies.[NEWLINE]
@@ -792,3 +850,6 @@ fields:
     default: Suburbs, OH 43666
 ---
 ```
+## Exhibit List
+## Affidavit
+## Findings of Fact and Conclusions of Law
