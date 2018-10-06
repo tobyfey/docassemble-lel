@@ -706,5 +706,56 @@ fields:
     default: Suburbs, OH 43666
 ---
 ```
+```markdown
+---
+"FirstFooterLeft": |-
+  First of [TOTALPAGES] pages
+  [END]
+"HeaderLeft": |-
+  Page [PAGENUM] of [TOTALPAGES]
+  [END]
+...
 
+[BOLDCENTER] IN THE ${ courtNameAC } [NEWLINE]
+${ countyAC }, OHIO
+
+[BEGIN_CAPTION]
+
+${ plaintiff }
+  
+  
+Plaintiff,[NEWLINE]
+  
+  
+[TAB]v.[NEWLINE]
+  
+  
+${ defendant }
+  
+  
+Defendant.
+  
+  
+[VERTICAL_LINE]
+
+CASE NO. ${ casenumber }[NEWLINE]
+  
+  
+  
+JUDGE: ${ judge }[NEWLINE]
+  
+  
+  
+${ title }[NEWLINE]
+
+[END_CAPTION]
+
+[BOLDCENTER] NOTICE CONCERNING PRO SE STATUS
+
+Defendant is low-income and unable to afford an attorney, and has not been able to get any attorney to represent them.  Defendant is not licensed to practice law, and is not knowledgeable in the practice of law for purposes of presenting a case in court.
+
+[BOLDCENTER] ANSWER
+
+Unless Defendant specifically admits the allegations made by Plaintiff in the Complaint, Defendant denies the allegations in the Complaint.
+```
 
