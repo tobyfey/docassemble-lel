@@ -460,7 +460,7 @@ def fact_from_a_id(a_id):
 
 ## Fact Object Questions
 
-This question will ask the fact questions needed to determine
+This question will ask the fact questions needed to determine if a legal object is met.
 
 Fact questions can have different kinds of datatypes as inputs, unlike LegalObject children questions which are yes and no questions.
 
@@ -484,6 +484,7 @@ fields:
   code: x.questioncode()
 ---
 ```
+The questioncode is a method of the class FactObjectList.  However, the data for the FactObjectList is part of the Elements AirTable, not the Facts AirTable, because a legal object has a single FactObjectList as an attribute (which will have FactObjects if it is a defense or the final branch of the children tree.
 
 ```python
 class FactObjectList(DAList):
@@ -572,10 +573,16 @@ code: |
 
 Evidence is different than the LegalObject and Facts children - it isn't asking multiple questions for multiple children.  It is asking one question - How do you prove that fact? - and allowing multiple answers
 
+Certain fields should be shown depending on type of evidence
+- Documents: Title
+- Plaintiff's Evidence: ParagraphOrExhibit, PoENumber
+- Testimony: Statement
+- WitnessTestimony: Statement, Name of Witness, Relation, Age
+
 ```yaml
 generic object: FactObject
 sets: x.evidence
-question: How can you prove ${ x.evlabel }?
+question: How can you prove ${ x.facts.ev }?
 subquestion: |
   ${ x.evexplanation }
   
@@ -591,16 +598,75 @@ fields:
    input type: radio
    choices:
      - Documents: documents
-     - Photographs: photos
+     - Photographs: documents
      - Plaintiff's evidence: plaintiffevidence
      - Witness testimony: witnesstestimony
      - Your testimony: yourtestimony
+     
 ---
 ```
+### Evidence class
+
+I should remove the initializeAttribute for children
+
+The evexplanation method takes the information for each piece of evidence and makes an explanation for it and adds the Evidence object to AffidavitSet or ExhibitSet.
+
+```python
+class EvidenceList(DAList):
+	def ___init___(self, *pargs, **kwargs):
+		self.initializeAttribute('children', LegalObjectList.using(object_type=LegalObject))
+		return super(LegalObject, self).init(*pargs, **kwargs)
+		
+	def evexplanation(self)
+
+```
+
 
 # Summary Screen and Documents
 - Stuff should be added to sets if a LegalObject is met.  When, where do I do that?
 - Then stuff has to be sorted
+
+## Summary question
+The final summary block drives the entire docassemble interview.  The rest of the questions are used to determine the variables listed in this question.
+
+
+
+<img width="600" src="img/summary.jpg">
+
+```yaml
+mandatory: True
+question: Summary 
+subquestion: |
+
+
+  % for rlo in legalobjects:
+  
+  % endfor
+attachment:
+  - name: Eviction Answer
+    filename: EvictionAnswer
+    content file:
+      - answer.md
+```
+
+## Nested methods
+
+The nested methods are recursive methods, to build an explanation screen/hand-out 
+
+```python
+class LegalObject(DAObject):
+
+	def nested_explain(self):
+		
+```
+
+```python
+class FactObjectList(DAList):
+
+	def nested_fact(self):
+		
+```
+
 
 ## Information for the pleading
 
@@ -641,94 +707,4 @@ fields:
 ---
 ```
 
-```python
-class EvidenceList(DAList):
-	def ___init___(self, *pargs, **kwargs):
-		self.initializeAttribute('children', LegalObjectList.using(object_type=LegalObject))
-		return super(LegalObject, self).init(*pargs, **kwargs)
 
-```
-## Summary question
-The final summary block drives the entire docassemble interview.  The rest of the questions are used to determine the variables listed in this question.
-
-<img width="600" src="img/summary.jpg">
-
-```yaml
-mandatory: True
-question: Summary 
-subquestion: |
-
-
-  % for rlo in relevantlegalobjects:
-  
-  **${ rlo }**
-  
-  	% if rlo.ismet:
-  
-  		${ rlo.explanationifmet }
-  
-  		Here is an explanation of why the defenses you investigated in this interview will not prevent an eviction.
-  
-  		% if hasattr(rlo, 'children'):
-  
-  			% for rloc in rlo.children:
-  
-  				% if rloc.isrelevant:
-  
-  					${ rloc.explanationifmet }
-  
-  					% if hasattr(rloc, 'children'):
-  
- 						% for rlocc in rloc.children:
-  
-  							% if rlocc.isrelevant:
-  
-  								${ rlocc.explanationifmet }
-  
-							% endif  
-  						% endfor
-  					% endif
-  				% endif
-  			% endfor
-  		% endif
-  
-  	% else:
-  
-  ${ rlo.explanationifnotmet }
-
-  % if hasattr(rlo, 'children'):
-  
-  % for rloc in rlo.children:
-
-  % if rloc.isrelevant:
-
-  % if not rloc.ismet:
-  
-  ${ rloc.explanationifnotmet }
-  
-  % if hasattr(rloc, 'children'):
-  
-  % for rlocc in rloc.children:
-  
-  % if rlocc.isrelevant:
-  
-  % if not rlocc.ismet:
-  
-  1. ${ rlocc.explanationifnotmet }
-  
-  % endif
-  % endif
-  % endfor
-  % endif
-  % endif
-  % endif
-  % endfor
-  % endif
-  % endif
-  % endfor
-attachment:
-  - name: Eviction Answer
-    filename: EvictionAnswer
-    content file:
-      - answer.md
-```
