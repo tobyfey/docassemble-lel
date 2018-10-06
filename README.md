@@ -88,28 +88,44 @@ The classes of Legal Objects are also defined in legalobject.py
 1. Add sets to collect information for pleadings
 ### Auto Gather
 
-Objects that are in the class DAList have an automatic gathering system, where the interview will ask if there are any members of the list or if there is another.  To avoid this feature, objects have to have auto.gather set to False.
+Objects that are in the class DAList have an automatic gathering system, where the interview will ask if there are any members of the list or if there is another.  To avoid this feature, objects have to have auto.gather set to False, and gathered has to be set to True.  You can also set True to gathered in a code block after something that needs to happen (like legalobjects.gathered).
 
 ```yaml
 mandatory: True
 code: |
   legalobjects.auto_gather = False
-  - answerset: DASet
-  - answerlist: DAList
-  - defensesset: DASet
-  - defenseslist: DAList
-  - remediesset: DASet
-  - remedieslist: DAList
-  - exhibitset: DASet
-  - exhibitlist: DAList
-  - affidavitset: DASet
-  - affidavitlist: DAList
-  - findingsoffactset: DASet
-  - findingsoffactlist: DAList
-  - conclusionsoflawset: DASet
-  - conclusionsoflawlist: DAList
-  - toolsset: DASet
-  - toolslist: DAList
+  answerset.auto_gather = False
+  answerlist.auto_gather = False
+  defensesset.auto_gather = False
+  defenseslist.auto_gather = False
+  remediesset.auto_gather = False
+  remedieslist.auto_gather = False
+  exhibitset.auto_gather = False
+  exhibitlist.auto_gather = False
+  affidavitset.auto_gather = False
+  affidavitlist.auto_gather = False
+  findingsoffactset.auto_gather = False
+  findingsoffactlist.auto_gather = False
+  conclusionsoflawset.auto_gather = False
+  conclusionsoflawlist.auto_gather = False
+  toolsset.auto_gather = False
+  toolslist.auto_gather = False
+  answerset.gathered = True
+  answerlist.gathered = True
+  defensesset.gathered = True
+  defenseslist.gathered = True
+  remediesset.gathered = True
+  remedieslist.gathered = True
+  exhibitset.gathered = True
+  exhibitlist.gathered = True
+  affidavitset.gathered = True
+  affidavitlist.gathered = True
+  findingsoffactset.gathered = True
+  findingsoffactlist.gathered = True
+  conclusionsoflawset.gathered = True
+  conclusionsoflawlist.gathered = True
+  toolsset.gathered = True
+  toolslist.gathered = True
 ---
 ```
 
@@ -140,7 +156,33 @@ choices:
 ---
 ```
 
-### Type Of Housing Filter
+
+## Selecting Legal Action
+Once we have the jurisdiction set, the
+
+<img width="600" src="img/parentlegalobject.jpg">
+
+This question uses the "datatype: object" type of question, which allows you to pick an object. 
+
+The interview makes a set of all legal objects whose parent attribute = 'parent' and is marked as active.  It then builds the attribute of the object from the AirTable fields.
+
+
+```yaml
+question: |
+  What is the legal action?
+fields:
+  - Type: a_id
+    input type: radio
+    choices:
+      - Eviction: recB0J8H7GkpRuQ80
+---
+code: |
+  legalobjects.append(object_from_a_id(atid))
+  legalobjects.gathered = True
+---
+```
+
+## Creating Children LegalObjects
 
 The filtering for type of housing occurs when the children legal objects are appended to the LegalObjectList.
 
@@ -159,74 +201,7 @@ code: |
 ```
 
 
-
-## Selecting Legal Action
-Once we have the jurisdiction set, the
-
-<img width="600" src="img/parentlegalobject.jpg">
-
-This question uses the "datatype: object" type of question, which allows you to pick an object. 
-
-The interview makes a set of all legal objects whose parent attribute = 'parent' and is marked as active.  It then builds the attribute of the object from the AirTable fields.
-
-
-```yaml
-question: What do you need help with?
-fields:
-  - I need help with: relevantlegalobject
-    datatype: object
-    choices: parentlegalobjects
----
-mandatory: True
-code: |
-  base_key = 'appA5wMpmdl4Vo8Kb'
-  table_name = 'Elements'
-  api_key = get_config('airtable api key')
-  api_response = Airtable(base_key, table_name, api_key)
-  el = api_response.get_all(formula="and({parent} = 'parent', NOT({Active}=''))")
-  counter = 0
-  for child in el:
-    funcobject = LegalObject()
-    funcobject.instanceName = 'funcobject'
-    funcobject.variablefield = el[counter]['fields']['field']
-	  funcobject.name = el[counter]['fields']['label']
-    funcobject.label = el[counter]['fields']['label']
-    funcobject.id = el[counter]['id']
-    if 'datatype' in el[counter]['fields']:
-      funcobject.datatype = el[counter]['fields']['datatype']
-	  if 'help' in el[counter]['fields']:
-	    funcobject.help = el[counter]['fields']['help']
-    if 'hint' in el[counter]['fields']:
-	    funcobject.help = el[counter]['fields']['hint']
-    if 'image' in el[counter]['fields']:
-	    funcobject.image = el[counter]['fields']['image']
-    if 'default' in el[counter]['fields']:
-	    funcobject.default = el[counter]['fields']['default']
-    if 'note' in el[counter]['fields']:
-	    funcobject.note = el[counter]['fields']['note']
-    if 'children' in el[counter]['fields']:
-	    funcobject.childrenlist = el[counter]['fields']['children']
-    if 'facts' in el[counter]['fields']:
-	    funcobject.factslist = el[counter]['fields']['facts']
-    if 'parent' in el[counter]['fields']:
-	    funcobject.parent = el[counter]['fields']['parent'][0]
-    if 'question' in el[counter]['fields']:
-	    funcobject.question = el[counter]['fields']['question']
-    if 'explanation' in el[counter]['fields']:
-	    funcobject.explanation = el[counter]['fields']['explanation']
-    if 'explanationbottom' in el[counter]['fields']:
-	    funcobject.explanationbottom = el[counter]['fields']['explanationbottom']
-    if 'explanationifmet' in el[counter]['fields']:
-	    funcobject.explanationifmet = el[counter]['fields']['explanationifmet']
-    if 'explanationifnotmet' in el[counter]['fields']:
-	    funcobject.explanationifnotmet = el[counter]['fields']['explanationifnotmet']
-    parentlegalobjects.append(funcobject,set_instance_name=True)
-    counter += 1
-  parentlegalobjects.gathered = True
----
-```
-
-## Building Children Elements
+### Function to pull data from AirTable
 
 The function object_from_a_id sets the attributes for a legal object based on AirTable fields.  The function takes the id number for a row in AirTable.  (It can be tricky to figure out what the id is - I should look into if there is an easier way.)
 
@@ -300,23 +275,6 @@ def object_from_a_id(a_id):
 ```
 <img width="600" src="img/airtableelements1.jpg">
 
-### Generating Fact Children
-
-If a LegalObject has a facts attribute, after the LegalObject is added in the above block, then FactObjects are added to the LegalObject's FactObjectList with the following block.
-
-```yaml
-generic object: LegalObject
-sets: 
-  - x.facts
-code: |
-  if hasattr(x,'factslist'):
-    x.facts.there_are_any = True
-    for fid in x.factslist:
-      x.facts.append(fact_from_a_id(fid),set_instance_name=True)
-    x.facts.there_is_another = False
----
-```
-
 ## Asking Which Children Elements Are Relevant
 
 This block produces a question screen for users to determine if the children LegalObjects are relevant.
@@ -363,7 +321,7 @@ class LegalObject(DAObject):
 		return questioncode
 ```
 
-## Converting the dict of relevant children to object attributes
+### Converting the dict of relevant children to object attributes
 
 This is what causes .isrelevant to seem backwards - the user picks a child legal object to investigate by unclicking the checkbox, rather than clicking it.
 
@@ -392,44 +350,15 @@ code: |
       x.ismet = True
     else:
       x.ismet = False
-	else:
-		x.ismet = False
+  else:
+	x.ismet = False
 ---
 ```
 
-### .ismet based on any_or_all
 
-A LegalObjectList has an any
+### ismet for LegalObjectLists
 
-```python
-class LegalObjectList(DAList):
-
-	def is_met(self):
-		if self.any_or_all == "Any":
-			counter = 0
-			for legalobject in self:
-				if legalobject.ismet:
-					return True
-				if not legalobject.isrelevant:
-					counter += 1
-			if counter == len(self):
-				return True
-			return False
-		else:
-			counter = 0
-			for legalobject in self:
-				if legalobject.ismet:
-					counter += 1
-				else:
-					return False
-				if not legalobject.isrelevant and not legalobject.ismet:
-					counter ++ 1
-			if counter == len(self):
-				return True
-			return False
-```
-
-### ismet based on List
+The children LegalObjects are in a LegalObjectList that is an attribute of the parent LegalObject.  LegalObjectLists such as x.children have their own attributes, including ismet.  Whether a LegalObject is met depends on whether x.children.ismet
 
 ```yaml
 generic object: LegalObjectList
@@ -448,7 +377,7 @@ code: |
 ---
 ```
 
-### ismet in class?
+### Legal Object Class
 
 ```python
 class LegalObject(DAObject):
@@ -457,20 +386,9 @@ class LegalObject(DAObject):
 		self.initializeAttribute('facts', FactObjectList.using(object_type=FactObject))
 		return super(LegalObject, self).init(*pargs, **kwargs)
 
-
-
-
-	def is_met(self):
-		if not hasattr(self, 'children') or self.children.ismet:
-			if not hasattr(self, 'facts') or self.facts.ismet:
-				return True
-			else:
-				return False
-		else:
-			return False
 ```
 
-
+# Fact Children
 
 ```python
 class FactObject(DAObject):
@@ -479,8 +397,27 @@ class FactObject(DAObject):
 		return super(LegalObject, self).init(*pargs, **kwargs)
 
 ```
+
+## Generating Fact Children
+
+If a LegalObject has a facts attribute, after the LegalObject is added in the above block, then FactObjects are added to the LegalObject's FactObjectList with the following block.
+
+```yaml
+generic object: LegalObject
+sets: 
+  - x.facts
+code: |
+  if hasattr(x,'factslist'):
+    x.facts.there_are_any = True
+    for fid in x.factslist:
+      x.facts.append(fact_from_a_id(fid),set_instance_name=True)
+    x.facts.there_is_another = False
+---
+```
+
+
 ## Facts from the Airtable
-FactObjects are populated from a different AirTable than Elements.
+FactObjects are populated from a different AirTable than Elements.  This also sets information for the EvidenceList, which is stored in each
 
 <img width="600" src="img/airtablefacts.jpg">
 
@@ -520,9 +457,10 @@ def fact_from_a_id(a_id):
 		funcobject.explanationifnotmet = el['fields']['explanationifnotmet']
 	return funcobject
 ```
+
 ## Fact Object Questions
 
-This question will ask whether 
+This question will ask the fact questions needed to determine
 
 Fact questions can have different kinds of datatypes as inputs, unlike LegalObject children questions which are yes and no questions.
 
@@ -570,24 +508,6 @@ class FactObjectList(DAList):
 			questioncode.append(adict)
 		return questioncode
 		
-	def is_met(self):
-		if self.comparisontype == "Equals":
-			if self[0].field == self[1].field:
-				return True
-			else:
-				return False
-		elif self.comparisontype == "AllTrue":
-			for fact in self:
-				if self.field == False:
-					return False
-				else:
-					return True
-		elif self.comparisontype == "CompareDate":
-			if self[0].field.plus(days=3) < self[1].field:
-				return True
-			else:
-				return False
-
 ```
 ## Fact .ismet
 
@@ -643,6 +563,45 @@ code: |
       x.ismet = True
 ---
 ```
+# Evidence
+
+## Asking if there is more evidence
+
+- Needs to be asked only for facts that are relevant
+- The evidencetype needs to determine what sets information is put in - testimony goes into an affidavit (a different one for each client)
+
+Evidence is different than the LegalObject and Facts children - it isn't asking multiple questions for multiple children.  It is asking one question - How do you prove that fact? - and allowing multiple answers
+
+```yaml
+generic object: FactObject
+sets: x.evidence
+question: How can you prove ${ x.evlabel }?
+subquestion: |
+  ${ x.evexplanation }
+  
+  ${ x.evquestion }
+
+  % if hasattr(x,'html'):
+  ${ x.html }
+  % endif
+  
+  
+fields:
+ - Type of evidence: evidencetype
+   input type: radio
+   choices:
+     - Documents: documents
+     - Photographs: photos
+     - Plaintiff's evidence: plaintiffevidence
+     - Witness testimony: witnesstestimony
+     - Your testimony: yourtestimony
+---
+```
+
+# Summary Screen and Documents
+- Stuff should be added to sets if a LegalObject is met.  When, where do I do that?
+- Then stuff has to be sorted
+
 ## Information for the pleading
 
 <img width="600" src="img/captionquestions.jpg">
