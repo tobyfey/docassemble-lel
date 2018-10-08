@@ -512,12 +512,19 @@ class FactObjectList(DAList):
 ```
 ## Fact .ismet
 
-This section has the different ways a fact object 
+This section has the different ways a Fact Object List can be met, because of an interaction between the fact objects defined here.
 
-1. Equals - if two
-1. 2AllTrue
-1. 1AllTrue
+This list can be added to any time a different type of interaction is needed.  By keeping this section flexible and human readable, we can scale this project as needed to different kinds of information.
+
+1. Equals - if two of the fact objects are the same
+1. 2AllTrue - if both fact objects are true
+1. 1AllTrue - if the only fact object is true
 1. 3AllTrue
+1. 4AnyTrue
+1. CompareDate
+1. CompareDateAmount
+
+**This section will have to add facts to sets for exhibit lists, affidavit and findings of fact.**  Should I make a method for this?
 
 ```yaml
 generic object: FactObjectList
