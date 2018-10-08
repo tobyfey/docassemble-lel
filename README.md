@@ -851,5 +851,20 @@ fields:
 ---
 ```
 ## Exhibit List
+```markdown
+% if exhibitlist:
+
+% endif
+```
 ## Affidavit
+```markdown
+% if affidavitlist:
+
+% endif
+```
 ## Findings of Fact and Conclusions of Law
+Users should get an option to add Findings of Fact and Conclusions of Law.
+
+```markddown
+
+```
