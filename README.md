@@ -24,7 +24,7 @@ short_title: Walkthrough
 	1. [Fact Objects](#factobjects)
 		1. [Creating Children Fact Objects](#creatingchildrenfactobjects)
 			1. [Fact Object AirTable Function](#factobjectairtablefunction)
-		1. [Fact Object Questions](#factobject questions)
+		1. [Fact Object Questions](#factobjectquestions)
 		1. [Fact Object ismet](#factobjectismet)
 	1. [Evidence](#evidence)
 		1. [Asking if there is more evidence](#askingevidence)
