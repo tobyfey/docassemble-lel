@@ -20,6 +20,7 @@ short_title: Walkthrough
 			1. [Converting dict to attributes](#convertingdicttoattributes)
 		1. [Legal Object ismet](#legalobjectismet)
 			1. [LegalObjectList ismet](#legalobjectlistismet)
+		1. [LegalObject class](#legalobjectclass)
 	1. [Fact Objects](#factobjects)
 		1. [Creating Children Fact Objects](#creatingchildrenfactobjects)
 			1. [Fact Object AirTable Function](#factobjectairtablefunction)
@@ -35,6 +36,7 @@ short_title: Walkthrough
 		1. [Affirmative Defenses](#affirmativedefenses)
 			1. [Nested methods](#nestedmethods)
 		1. [Remedies](#remedies)
+		1. [Signature](#signature)
 	1. [Other Documents](#otherdocuments)
 		1. [Exhibit List](#exhibitlist)
 		1. [Affidavit](#affidavit)
@@ -42,9 +44,8 @@ short_title: Walkthrough
 			1. [Conclusions of Law](#conclusionsoflaw)
 	1. [Instructions](#instructions)
 
-LEL Code
-# <a name="initial blocks"></a>Initial Blocks 
-## <a name="imports and metadata"></a>Imports and Metadata
+# Initial Blocks<a name="initialblocks"></a>
+## Imports and Metadata<a name="importsandmetadata"></a>
 
 ```yaml
 metadata:
@@ -73,8 +74,7 @@ from docassemble.base.functions import word
 from .airtable import Airtable
 ```
 
-
-## Variables 
+## Variables<a name="variables"></a>
 
 Two static variables used for accessing the AirTable are set in legalobject.py.  The airtable api key is set in the config file.  (When I tried to make this variable with underscores instead of spaces, it didn't work.)
 
@@ -83,7 +83,7 @@ base_key = 'appA5wMpmdl4Vo8Kb'
 api_key=get_config('airtable api key')
 ```
 
-## Objects
+## Objects<a name="objects"></a>
 
 The foundation of the Legal Elements Library is the use of Legal Objects.  The Eviction Fighter asks questions to determine what Legal Elements/Objects are relevant, then provides information stored as structured data in the relevant Legal Objects.
 
@@ -120,11 +120,11 @@ generic object: FactObject
   - x.evidence: EvidenceList.using(object_type=Evidence,auto_gather=False)
 ```
 The classes of Legal Objects are also defined in legalobject.py
-### TODO
-1. relevantnotmetlegalobjects isn't used, i think
-1. Wouldn't it be better to have one legalobjects list
-1. Add sets to collect information for pleadings
-### Auto Gather
+**TODO**
+
+
+
+### Auto Gather<a name="autogather"></a>
 
 Objects that are in the class DAList have an automatic gathering system, where the interview will ask if there are any members of the list or if there is another.  To avoid this feature, objects have to have auto.gather set to False, and gathered has to be set to True.  You can also set True to gathered in a code block after something that needs to happen (like legalobjects.gathered).
 
@@ -168,7 +168,7 @@ code: |
 ```
 
 
-## Establishing Jurisdiction
+### Establishing Jurisdiction<a name="establishingjurisdiction"></a>
 
 First, we must answer the questions that will determine what law applies for a specific case, or, in other words, what set of legal objects are relevant.  These questions will determine the state and local jurisdiction and the type of housing, which will determine what rules and laws apply to a particular user.
 
@@ -195,7 +195,7 @@ choices:
 ```
 
 
-## Selecting Legal Action
+### Selecting Legal Action<a name="selectinglegalaction"></a>
 Once we have the jurisdiction set, the
 
 <img width="600" src="img/parentlegalobject.jpg">
@@ -220,7 +220,9 @@ code: |
 ---
 ```
 
-## Creating Children LegalObjects
+## Legal Objects<a name="legalobjects"></a>
+
+### Creating Children Legal Objects<a name="creatingchildrenlegalobjects"></a>
 
 The filtering for type of housing occurs when the children legal objects are appended to the LegalObjectList.
 
@@ -239,7 +241,7 @@ code: |
 ```
 
 
-### Function to pull data from AirTable
+#### Legal Object AirTable Function<a name="legalobjectairtablefunction"></a>
 
 The function object_from_a_id sets the attributes for a legal object based on AirTable fields.  The function takes the id number for a row in AirTable.  (It can be tricky to figure out what the id is - I should look into if there is an easier way.)
 
@@ -313,7 +315,7 @@ def object_from_a_id(a_id):
 ```
 <img width="600" src="img/airtableelements1.jpg">
 
-## Asking Which Children Elements Are Relevant
+### Asking Which Legal Objects Are Relevant<a name="askinglegalobjectrelevant"></a>
 
 This block produces a question screen for users to determine if the children LegalObjects are relevant.
 
@@ -359,7 +361,7 @@ class LegalObject(DAObject):
 		return questioncode
 ```
 
-### Converting the dict of relevant children to object attributes
+#### Converting dict to attributes<a name="convertingdicttoattributes"></a>
 
 This is what causes .isrelevant to seem backwards - the user picks a child legal object to investigate by unclicking the checkbox, rather than clicking it.
 
@@ -375,7 +377,7 @@ code: |
 ---
 ```
 
-## Setting ismet based on children and facts
+### Legal Object ismet<a name="legalobjectismet"></a>
 
 This block sets .ismet for an object based on both its LegalObject children and FactObject children.  Since the final screen needs to know if a relevant legal object is met, this block makes docassemble find
 
@@ -394,7 +396,7 @@ code: |
 ```
 
 
-### ismet for LegalObjectLists
+#### LegalObjectList ismet<a name="legalobjectlistismet"></a>
 
 The children LegalObjects are in a LegalObjectList that is an attribute of the parent LegalObject.  LegalObjectLists such as x.children have their own attributes, including ismet.  Whether a LegalObject is met depends on whether x.children.ismet
 
@@ -415,7 +417,7 @@ code: |
 ---
 ```
 
-### Legal Object Class
+### LegalObject class<a name="legalobjectclass"></a>
 
 ```python
 class LegalObject(DAObject):
@@ -426,7 +428,7 @@ class LegalObject(DAObject):
 
 ```
 
-# Fact Children
+## Fact Objects<a name="factobjects"></a>
 
 ```python
 class FactObject(DAObject):
@@ -436,7 +438,7 @@ class FactObject(DAObject):
 
 ```
 
-## Generating Fact Children
+### Creating Children Fact Objects<a name="creatingchildrenfactobjects"></a>
 
 If a LegalObject has a facts attribute, after the LegalObject is added in the above block, then FactObjects are added to the LegalObject's FactObjectList with the following block.
 
@@ -453,8 +455,7 @@ code: |
 ---
 ```
 
-
-## Facts from the Airtable
+#### Fact Object AirTable Function<a name="factobjectairtablefunction"></a>
 FactObjects are populated from a different AirTable than Elements.  This also sets information for the EvidenceList, which is stored in each
 
 <img width="600" src="img/airtablefacts.jpg">
@@ -495,8 +496,7 @@ def fact_from_a_id(a_id):
 		funcobject.explanationifnotmet = el['fields']['explanationifnotmet']
 	return funcobject
 ```
-
-## Fact Object Questions
+### Fact Object Questions<a name="factobject questions"></a>
 
 This question will ask the fact questions needed to determine if a legal object is met.
 
@@ -548,7 +548,7 @@ class FactObjectList(DAList):
 		return questioncode
 		
 ```
-## Fact .ismet
+### Fact Object ismet<a name="factobjectismet"></a>
 
 This section has the different ways a Fact Object List can be met, because of an interaction between the fact objects defined here.
 
@@ -609,9 +609,8 @@ code: |
       x.ismet = True
 ---
 ```
-# Evidence
-
-## Asking if there is more evidence
+## Evidence<a name="evidence"></a>
+### Asking if there is more evidence<a name="askingevidence"></a>
 
 - Needs to be asked only for facts that are relevant
 - The evidencetype needs to determine what sets information is put in - testimony goes into an affidavit (a different one for each client)
@@ -650,7 +649,7 @@ fields:
      
 ---
 ```
-### Evidence class
+### Evidence Class<a name="evidenceclass"></a>
 
 I should remove the initializeAttribute for children
 
@@ -665,119 +664,9 @@ class EvidenceList(DAList):
 	def evexplanation(self)
 
 ```
-## Answer
-
-```markdown
-[BOLDCENTER] ANSWER
-
-Unless Defendant specifically admits the allegations made by Plaintiff in the Complaint, Defendant denies the allegations in the Complaint.
-
-
-% if relevantlegalobjects[0].children[0].isrelevant and not relevantlegalobjects[0].children[0].ismet:
-1. Defendant denies that Plaintiff has standing to file this eviction action.[NEWLINE]
-% else:
-1. Defendant admits that Plaintiff has standing to file this eviction action.[NEWLINE]
-% endif
-
-% if relevantlegalobjects[0].children[1].isrelevant and not relevantlegalobjects[0].children[1].ismet:
-1. Defendant denies that Defendant unlawfully and forcibly detains from Plaintiff possession of the described premises.  Defendant lawfully retains possession of the premises because Plaintiff does not have valid grounds to evict.[NEWLINE]
-% else:
-1. Defendant admits that Plaintiff has a valid reason to evict, but should not be granted an eviction for other reasons.[NEWLINE]
-% endif
-
-% if relevantlegalobjects[0].children[2].isrelevant and not relevantlegalobjects[0].children[2].ismet:
-1. Defendant denies that Plaintiff served a valid notice to vacate.[NEWLINE]
-% else:
-1. Defendant admits that Plaintiff served a notice to vacate, but Defendant denies that Plaintiff had a valid reason to do so.[NEWLINE]
-% endif
-
-```
-
-
-## Affirmative Defenses
-
-```markdown
-% if len(metlegalobject) > 0):
-
-[BOLDCENTER] AFFIRMATIVE DEFENSES
-% if len(metlegalobject) = 1):
-Defendant incorporates all prior paragraphs in the following defense.
-% else:
-Defendant incorporates all prior paragraphs in the following defense.
-% endif
-% for legalobject in metlegalobjects:
-[BOLDCENTER] AFFIRMATIVE DEFENSE ${ legalobject.indexnumber }
-[BOLDCENTER} ${ legalobject.title }
-
-1. ${ legalobject.law }
-% for fact in legalobject.facts:
-1. ${ fact.prefact }${ fact.description }${ fact.postfact }
-% for evidence in legalobject.evidencelist:
-${ fact.exhibit }
-% endfor
-% endfor
-1. ${ legalobject.conclusion }
-% endfor
-% endif
-```
-
-## Remedies
-
-```markdown
-[BOLDCENTER] DEMAND FOR JUDGMENT
-
-For the above, reasons, Defendant requests that:[NEWLINE]
-1. Plaintiff's Complaint be dismissed, at Plaintiff's cost,[NEWLINE]
-2. and any other appropriate remedies.[NEWLINE]
-```
-
-# Summary Screen and Documents
-- Stuff should be added to sets if a LegalObject is met.  When, where do I do that?
-- Then stuff has to be sorted
-
-## Summary question
-The final summary block drives the entire docassemble interview.  The rest of the questions are used to determine the variables listed in this question.
-
-
-
-<img width="600" src="img/summary.jpg">
-
-```yaml
-mandatory: True
-question: Summary 
-subquestion: |
-
-
-  % for rlo in legalobjects:
-  
-  % endfor
-attachment:
-  - name: Eviction Answer
-    filename: EvictionAnswer
-    content file:
-      - answer.md
-```
-
-## Nested methods
-
-The nested methods are recursive methods, to build an explanation screen/hand-out 
-
-```python
-class LegalObject(DAObject):
-
-	def nested_explain(self):
-		
-```
-
-```python
-class FactObjectList(DAList):
-
-	def nested_fact(self):
-		
-```
-
-
-## Information for the pleading
+# Documents<a name="documents"></a>
+## Answer<a name="answer"></a>
+### Caption<a name="caption"></a>
 
 <img width="600" src="img/captionquestions.jpg">
 
@@ -854,8 +743,90 @@ Defendant is low-income and unable to afford an attorney, and has not been able 
 Unless Defendant specifically admits the allegations made by Plaintiff in the Complaint, Defendant denies the allegations in the Complaint.
 ```
 
-### Signature
+### Answer Section<a name="answersection"></a>
 
+```markdown
+[BOLDCENTER] ANSWER
+
+Unless Defendant specifically admits the allegations made by Plaintiff in the Complaint, Defendant denies the allegations in the Complaint.
+
+
+% if relevantlegalobjects[0].children[0].isrelevant and not relevantlegalobjects[0].children[0].ismet:
+1. Defendant denies that Plaintiff has standing to file this eviction action.[NEWLINE]
+% else:
+1. Defendant admits that Plaintiff has standing to file this eviction action.[NEWLINE]
+% endif
+
+% if relevantlegalobjects[0].children[1].isrelevant and not relevantlegalobjects[0].children[1].ismet:
+1. Defendant denies that Defendant unlawfully and forcibly detains from Plaintiff possession of the described premises.  Defendant lawfully retains possession of the premises because Plaintiff does not have valid grounds to evict.[NEWLINE]
+% else:
+1. Defendant admits that Plaintiff has a valid reason to evict, but should not be granted an eviction for other reasons.[NEWLINE]
+% endif
+
+% if relevantlegalobjects[0].children[2].isrelevant and not relevantlegalobjects[0].children[2].ismet:
+1. Defendant denies that Plaintiff served a valid notice to vacate.[NEWLINE]
+% else:
+1. Defendant admits that Plaintiff served a notice to vacate, but Defendant denies that Plaintiff had a valid reason to do so.[NEWLINE]
+% endif
+
+```
+
+### Affirmative Defenses<a name="affirmativedefenses"></a>
+
+```markdown
+% if len(metlegalobject) > 0):
+
+[BOLDCENTER] AFFIRMATIVE DEFENSES
+% if len(metlegalobject) = 1):
+Defendant incorporates all prior paragraphs in the following defense.
+% else:
+Defendant incorporates all prior paragraphs in the following defense.
+% endif
+% for legalobject in metlegalobjects:
+[BOLDCENTER] AFFIRMATIVE DEFENSE ${ legalobject.indexnumber }
+[BOLDCENTER} ${ legalobject.title }
+
+1. ${ legalobject.law }
+% for fact in legalobject.facts:
+1. ${ fact.prefact }${ fact.description }${ fact.postfact }
+% for evidence in legalobject.evidencelist:
+${ fact.exhibit }
+% endfor
+% endfor
+1. ${ legalobject.conclusion }
+% endfor
+% endif
+```
+#### Nested methods<a name="nestedmethods"></a>
+
+The nested methods are recursive methods, to build an explanation screen/hand-out 
+
+```python
+class LegalObject(DAObject):
+
+	def nested_explain(self):
+		
+```
+
+```python
+class FactObjectList(DAList):
+
+	def nested_fact(self):
+		
+```
+
+
+
+### Remedies<a name="remedies"></a>
+
+```markdown
+[BOLDCENTER] DEMAND FOR JUDGMENT
+
+For the above, reasons, Defendant requests that:[NEWLINE]
+1. Plaintiff's Complaint be dismissed, at Plaintiff's cost,[NEWLINE]
+2. and any other appropriate remedies.[NEWLINE]
+```
+### Signature<a name="signature"></a>
 ```markup
 [INDENTBY 3in][BLANK]  
 ${ defendant }, Pro Se Defendant  
@@ -895,21 +866,55 @@ fields:
     default: Suburbs, OH 43666
 ---
 ```
-## Exhibit List
+
+## Other Documents<a name="otherdocuments"></a>
+
+### Exhibit List<a name="exhibitlist"></a>
+
 ```markdown
 % if exhibitlist:
 
 % endif
 ```
-## Affidavit
+
+### Affidavit<a name="affidavit"></a>
+
 ```markdown
 % if affidavitlist:
 
 % endif
 ```
-## Findings of Fact and Conclusions of Law
+
+### Findings of Fact<a name="findingsoffact"></a>
+
 Users should get an option to add Findings of Fact and Conclusions of Law.
 
 ```markddown
 
 ```
+#### Conclusions of Law<a name="conclusionsoflaw"></a>
+
+
+## Instructions<a name="instructions"></a>
+The final summary block drives the entire docassemble interview.  The rest of the questions are used to determine the variables listed in this question.
+
+
+
+<img width="600" src="img/summary.jpg">
+
+```yaml
+mandatory: True
+question: Summary 
+subquestion: |
+
+
+  % for rlo in legalobjects:
+  
+  % endfor
+attachment:
+  - name: Eviction Answer
+    filename: EvictionAnswer
+    content file:
+      - answer.md
+```
+
