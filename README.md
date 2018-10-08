@@ -1,8 +1,3 @@
----
-layout: docs
-title: Eviction Fighter and Legal Elements Library Code Walkthrough
-short_title: Walkthrough
----
 # Table of contents
 1. [Initial Blocks](#initialblocks)
 	1. [Imports and Metadata](#importsandmetadata)
@@ -24,7 +19,7 @@ short_title: Walkthrough
 	1. [Fact Objects](#factobjects)
 		1. [Creating Children Fact Objects](#creatingchildrenfactobjects)
 			1. [Fact Object AirTable Function](#factobjectairtablefunction)
-		1. [Fact Object Questions](#factobjectquestions)
+		1. [Fact Object Questions](#factobject questions)
 		1. [Fact Object ismet](#factobjectismet)
 	1. [Evidence](#evidence)
 		1. [Asking if there is more evidence](#askingevidence)
@@ -34,7 +29,6 @@ short_title: Walkthrough
 		1. [Caption](#caption)
 		1. [Answer Section](#answersection)
 		1. [Affirmative Defenses](#affirmativedefenses)
-			1. [Nested methods](#nestedmethods)
 		1. [Remedies](#remedies)
 		1. [Signature](#signature)
 	1. [Other Documents](#otherdocuments)
@@ -43,6 +37,9 @@ short_title: Walkthrough
 		1. [Findings of Fact](#findingsoffact)
 			1. [Conclusions of Law](#conclusionsoflaw)
 	1. [Instructions](#instructions)
+		1. [Nested methods](#nestedmethods)
+	
+
 
 # Initial Blocks<a name="initialblocks"></a>
 ## Imports and Metadata<a name="importsandmetadata"></a>
@@ -799,26 +796,6 @@ ${ fact.exhibit }
 % endfor
 % endif
 ```
-#### Nested methods<a name="nestedmethods"></a>
-
-The nested methods are recursive methods, to build an explanation screen/hand-out 
-
-```python
-class LegalObject(DAObject):
-
-	def nested_explain(self):
-		
-```
-
-```python
-class FactObjectList(DAList):
-
-	def nested_fact(self):
-		
-```
-
-
-
 ### Remedies<a name="remedies"></a>
 
 ```markdown
@@ -919,4 +896,22 @@ attachment:
     content file:
       - answer.md
 ```
+### Nested methods<a name="nestedmethods"></a>
+
+The nested methods are recursive methods, to build an explanation screen/hand-out 
+
+```python
+class LegalObject(DAObject):
+
+	def nested_explain(self):
+		
+```
+
+```python
+class FactObjectList(DAList):
+
+	def nested_fact(self):
+		
+```
+
 
