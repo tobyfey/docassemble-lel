@@ -379,7 +379,9 @@ code: |
 
 ### Legal Object ismet<a name="legalobjectismet"></a>
 
-This block sets .ismet for an object based on both its LegalObject children and FactObject children.  Since the final screen needs to know if a relevant legal object is met, this block makes docassemble find
+This block sets .ismet for an object based on both its LegalObject children and FactObject children.  Since the final screen needs to know if a relevant legal object is met, this block makes docassemble find.
+
+This section will need to add the legalobject to the answer or affirmative defense section, depending on an attribute for the legalobject.  It will also be added to the conclusions of law section.  (Add in a motion to dismiss section next?)
 
 
 ```yaml
