@@ -900,6 +900,8 @@ The final summary block drives the entire docassemble interview.  The rest of th
 
 <img width="600" src="img/summary.jpg">
 
+Currently, to test, the summary screen will say if sets are populated:
+
 ```yaml
 mandatory: True
 question: Summary 
@@ -907,8 +909,18 @@ subquestion: |
 
 
   % for rlo in legalobjects:
-  
+  % if rlo.ismet == True:
+  **You will be evicted**
+  % else:
+  **You have a defense to the eviction.**
+  % endif
   % endfor
+  
+  Answer Set:
+  ${ answerset }
+  
+  Defenses Set:
+  $( defensesset }
 attachment:
   - name: Eviction Answer
     filename: EvictionAnswer
