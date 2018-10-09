@@ -280,6 +280,10 @@ def object_from_a_id(a_id):
 		funcobject.active = el['fields']['Active']
 	else:
 		funcobject.active = False
+	if 'pleadingsection' in el['fields']:
+		funcobject.pleadingsection = el['fields']['pleadingsection']
+	else:
+		funcobject.pleadingsection = 'none'
 	if 'help' in el['fields']:
 		funcobject.help = el['fields']['help']
 	if 'image' in el['fields']:
