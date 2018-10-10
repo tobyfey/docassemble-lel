@@ -645,6 +645,8 @@ Certain fields should be shown depending on type of evidence
 - Testimony: Statement
 - WitnessTestimony: Statement, Name of Witness, Relation, Age
 
+I should be able to ask if the evidence was evidence already submitted.
+
 ```yaml
 generic object: FactObject
 sets: x.evidence
