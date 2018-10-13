@@ -40,6 +40,13 @@
 		1. [Nested methods](#nestedmethods)
 	
 
+To determine if the parent legal object is met, the interview should go through all the relevant children legal objects to determine if they are met (but it may only go through the relevant children legal objects that are necessary - for example, if preconditions isn't me because of lack of corporate registration, will it determine if lack of representation is met?).
+
+Once it has been determined whether the parent legal object was met, then it should sort the answer legal objects (possibly based on user input about the complaint - default is preconditions, grounds, notice) and then sort the met children legal objects for the affirmative defenses (based on 'strength',.
+
+A code block then assigns exhibit numbers and affidavit numbers by going through the sorted list and fact children.  (All the fact children or just the ones that the defendant needs to dispute?  For now, I will stick with all, but this should be tested.) The fact children and the relevant number are added to the appropriate list (exhibit, affidavit, finding of facts, conclusion of law).
+
+What about remedies and tools?  In this same code block, I guess potential remedies and tools should also be added to the list
 
 # Initial Blocks<a name="initialblocks"></a>
 ## Imports and Metadata<a name="importsandmetadata"></a>
