@@ -91,7 +91,9 @@ api_key=get_config('airtable api key')
 
 The foundation of the Legal Elements Library is the use of Legal Objects.  The Eviction Fighter asks questions to determine what Legal Elements/Objects are relevant, then provides information stored as structured data in the relevant Legal Objects.
 
-The sets and lists are for collecting the legalobjects that are "met" and have information in attributes that should be used.  During the interview, the objects are collected in sets to avoid duplicate objects.  Before the documents are generated, the sets are sorted into lists.
+The sets and lists are for collecting the legalobjects that are "met" and have information in attributes that should be used.  During the interview, the objects are collected in sets to avoid duplicate objects.  Before the documents are generated, the sets are sorted into lists.  
+
+I got rid of sets because sets are immutable.  Instead, there will be a function that will add an object to a list, if there is no unique object in the list already.  If there is, we will add object.parent to the existing object (in order to have a list of the reasons a remedy or tool is selected)
 
 The Legal Objects are listed in legalobject.yml.  We can also set attributes of Legal Objects to special classes of Legal Objects by using generic objects.
 
@@ -677,7 +679,11 @@ fields:
      - Plaintiff's evidence: plaintiffevidence
      - Witness testimony: witnesstestimony
      - Your testimony: yourtestimony
-     
+   default: x.default
+ - Other make: car_make
+    show if:
+      variable: 
+      is: Other
 ---
 ```
 ### Evidence Class<a name="evidenceclass"></a>
