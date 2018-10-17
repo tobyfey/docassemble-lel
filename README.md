@@ -391,10 +391,10 @@ code: |
     if not hasattr(x, 'childrenlist') or x.children.ismet:
       x.ismet = True
       if 'Answer' in x.pleadingsection:
-        answerset.add(x)
+        answerlist.append(x)
       elif 'AffirmativeDefense' in x.pleadingsection:
-        defensesset.add(x)
-      conclusionsoflawset.add(x)
+        defenseslist.append(x)
+      conclusionsoflawlist.append(x)
     else:
       x.ismet = False
   else:
