@@ -666,7 +666,8 @@ fields:
 
 I should remove the initializeAttribute for children
 
-The evexplanation method takes the information for each piece of evidence and makes an explanation for it and adds the Evidence object to AffidavitSet or ExhibitSet.
+The evexplanation method takes the information for each piece of evidence and makes an explanation for it and adds the Evidence object to AffidavitSet or ExhibitSet, for example "See Exhibit 2 - Receipt 10/17/2018"
+x.exhibit = x.evexplanation()
 
 ```python
 class EvidenceList(DAList):
@@ -675,6 +676,8 @@ class EvidenceList(DAList):
 		return super(LegalObject, self).init(*pargs, **kwargs)
 		
 	def evexplanation(self)
+	
+
 
 ```
 # Documents<a name="documents"></a>
@@ -882,9 +885,49 @@ fields:
 
 Users should get an option to add Findings of Fact and Conclusions of Law.
 
-```markddown
+```markdown
+---
+"FirstFooterLeft": |-
+  First of [TOTALPAGES] pages
+  [END]
+"HeaderLeft": |-
+  Page [PAGENUM] of [TOTALPAGES]
+  [END]
+...
 
-```
+[BOLDCENTER] IN THE ${ courtNameAC } [NEWLINE]
+${ countyAC }, OHIO
+
+[BEGIN_CAPTION]
+
+${ plaintiff }
+  
+  
+Plaintiff,[NEWLINE]
+  
+  
+[TAB]v.[NEWLINE]
+  
+  
+${ defendant }
+  
+  
+Defendant.
+  
+  
+[VERTICAL_LINE]
+
+CASE NO. ${ casenumber }[NEWLINE]
+  
+  
+  
+JUDGE: ${ judge }[NEWLINE]
+  
+  
+  
+${ title }[NEWLINE]
+
+[END_CAPTION]
 #### Conclusions of Law<a name="conclusionsoflaw"></a>
 
 
