@@ -339,10 +339,6 @@ fields:
     code: x.questioncode()
 ---
 ```
-Here is an example of asking if the children of a child legal object are relevant.
-
-<img width="600" src="img/legalobjectchildrenquestion2.jpg">
-
 The method x.questioncode is defined in legalobject.py for the class LegalObject.  The method pulls information from attributes of the LegalObject children for the question.
 
 ```python
@@ -360,6 +356,10 @@ class LegalObject(DAObject):
 			questioncode.append(adict)
 		return questioncode
 ```
+
+Here is an example of asking if the children of a child legal object are relevant.
+
+<img width="600" src="img/legalobjectchildrenquestion2.jpg">
 
 #### Converting dict to attributes<a name="convertingdicttoattributes"></a>
 
