@@ -100,21 +100,13 @@ The Legal Objects are listed in legalobject.yml.  We can also set attributes of 
 ```yaml
 objects:
   - legalobjects: LegalObjectList.using(object_type=LegalObject,auto_gather=False)
-  - answerset: DASet
   - answerlist: DAList
-  - defensesset: DASet
   - defenseslist: DAList
-  - remediesset: DASet
   - remedieslist: DAList
-  - exhibitset: DASet
   - exhibitlist: DAList
-  - affidavitset: DASet
   - affidavitlist: DAList
-  - findingsoffactset: DASet
   - findingsoffactlist: DAList
-  - conclusionsoflawset: DASet
   - conclusionsoflawlist: DAList
-  - toolsset: DASet
   - toolslist: DAList
 ---
 generic object: LegalObject
