@@ -130,37 +130,21 @@ Objects that are in the class DAList have an automatic gathering system, where t
 mandatory: True
 code: |
   legalobjects.auto_gather = False
-  answerset.auto_gather = False
   answerlist.auto_gather = False
-  defensesset.auto_gather = False
   defenseslist.auto_gather = False
-  remediesset.auto_gather = False
   remedieslist.auto_gather = False
-  exhibitset.auto_gather = False
   exhibitlist.auto_gather = False
-  affidavitset.auto_gather = False
   affidavitlist.auto_gather = False
-  findingsoffactset.auto_gather = False
   findingsoffactlist.auto_gather = False
-  conclusionsoflawset.auto_gather = False
   conclusionsoflawlist.auto_gather = False
-  toolsset.auto_gather = False
   toolslist.auto_gather = False
-  answerset.gathered = True
   answerlist.gathered = True
-  defensesset.gathered = True
   defenseslist.gathered = True
-  remediesset.gathered = True
   remedieslist.gathered = True
-  exhibitset.gathered = True
   exhibitlist.gathered = True
-  affidavitset.gathered = True
   affidavitlist.gathered = True
-  findingsoffactset.gathered = True
   findingsoffactlist.gathered = True
-  conclusionsoflawset.gathered = True
   conclusionsoflawlist.gathered = True
-  toolsset.gathered = True
   toolslist.gathered = True
 ---
 ```
