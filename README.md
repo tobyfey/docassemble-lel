@@ -435,7 +435,7 @@ class LegalObject(DAObject):
 
 ## Fact Objects<a name="factobjects"></a>
 
-What is the problem with the fact.field label?  Why can't I do that through an alias.
+What is the problem with the fact.field label?  Why can't I do that through an alias?  I made a change in fact_from_aid that may work
 
 ```python
 class FactObject(DAObject):
@@ -634,6 +634,8 @@ Certain fields should be shown depending on type of evidence
 - WitnessTestimony: Statement, Name of Witness, Relation, Age
 
 I should be able to ask if the evidence was evidence already submitted.
+
+There will also be a number attribute, to keep track of the exhibit number or affidavit number.
 
 ```yaml
 generic object: FactObject
@@ -935,11 +937,16 @@ ${ title }[NEWLINE]
 
 
 ## Instructions<a name="instructions"></a>
-The final summary block drives the entire docassemble interview.  The rest of the questions are used to determine the variables listed in this question.
-
-
 
 <img width="600" src="img/summary.jpg">
+
+A docassemble interview is built from the mandatory summary block.  Because the block is mandatory, the program runs and finds out what variables need to be defined to complete the block.  Finding those variables is why all the other blocks are asked.
+
+The summary block in Eviction Fighter should explain in plain english the eviction defenses that a user could argue in court.  This should include a list of the evidence needed.  If there are no defenses, the summary block should explain why the defenses the user investigated are not appropriate.
+
+
+
+
 
 Currently, to test, the summary screen will say if sets are populated:
 
@@ -968,6 +975,38 @@ attachment:
     content file:
       - answer.md
 ```
+
+
+The summary block will look for the exhibit and affidavit numbers, forcing this code block to run.  
+
+This block will have to sort the legal objects, first by answer or defense (answer before by defense, and then by strength number ascending.)  Then it will have to go through the legal objects' facts, and then evidence, to put the evidence in order.  The code will assign the page number to the evidence object as an attribute.
+
+```yaml
+generic object: Evidence
+code: |
+  exhibitnumber = 1
+  affidavitnumber = 1
+  sortedanswers = answers.sorted(key = lambda x.strength)
+  sorteddefenses = defenses.sorted(key = lambda x.strength)
+  sortedanswers.extend(sorteddefenses)
+  for sa in sortedanswers:
+    if if hasattr(sa,'facts'):
+      for fact in sa.facts:
+        if hasattr(sa,'evidence'):
+	  for evi in fact.evidence:
+	    if hasattr(sa,'number'):
+	      pass
+	    else:
+	      if ev.typeofevidence == 'Documents':
+	        ev.number = exhibitnumber
+		exhibitnumber += 1
+		ev.description
+	      if ev.typeofevidence == 'Testimony':
+	        ev.number = affidavitnumber
+		affidavitnumber += 1
+	    
+```
+
 ### Nested methods<a name="nestedmethods"></a>
 
 The nested methods are recursive methods, to build an explanation screen/hand-out 
