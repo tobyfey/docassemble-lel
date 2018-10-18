@@ -930,6 +930,7 @@ JUDGE: ${ judge }[NEWLINE]
 ${ title }[NEWLINE]
 
 [END_CAPTION]
+```
 #### Conclusions of Law<a name="conclusionsoflaw"></a>
 
 
