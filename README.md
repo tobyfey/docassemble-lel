@@ -235,9 +235,7 @@ Notice that some of the fields set attributes of funcobject.facts, instead of se
 Is there a way to do this automatically based on field names?  Would we have to do the factobjectlist attributes seperately?
 
 FIELDS TO ADD
-- .pleadingsection - The choices should be 'Answer' or 'Defense' to indicate whether the legalobject should be added to the answerset or defensesset - (most of the first-level children of a legal object will likely be in the Answer section, and everything else will be in the Defenses section
-	- The .pleadingsection will likely have to be filled out.  Should I put in a default if it isn't completed in the AirTable?
--
+
 
 FIELDS TO REMOVE
 - .name?
@@ -437,6 +435,8 @@ class LegalObject(DAObject):
 
 ## Fact Objects<a name="factobjects"></a>
 
+What is the problem with the fact.field label?  Why can't I do that through an alias.
+
 ```python
 class FactObject(DAObject):
 	def ___init___(self, *pargs, **kwargs):
@@ -465,6 +465,9 @@ code: |
 #### Fact Object AirTable Function<a name="factobjectairtablefunction"></a>
 FactObjects are populated from a different AirTable than Elements.  This also sets information for the EvidenceList, which is stored in each
 
+I replaced funcobject.field = el['fields']['field'] with funcobject.field = funcobject.instanceName
+Maybe that will allow me to not have to write in instance names in the field
+
 <img width="600" src="img/airtablefacts.jpg">
 
 ```python
@@ -473,7 +476,7 @@ def fact_from_a_id(a_id):
 	table_name = 'Facts'
 	api_response = Airtable(base_key, table_name, api_key)
 	el = api_response.get(a_id)
-	funcobject.field = el['fields']['field']
+	funcobject.field = funcobject.instanceName
 	funcobject.label = el['fields']['label']
 	funcobject.id = el['id']
 	funcobject.datatype = el['fields']['datatype']
@@ -672,7 +675,6 @@ x.exhibit = x.evexplanation()
 ```python
 class EvidenceList(DAList):
 	def ___init___(self, *pargs, **kwargs):
-		self.initializeAttribute('children', LegalObjectList.using(object_type=LegalObject))
 		return super(LegalObject, self).init(*pargs, **kwargs)
 		
 	def evexplanation(self)
