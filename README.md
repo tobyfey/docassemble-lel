@@ -1000,11 +1000,19 @@ code: |
 	      if ev.typeofevidence == 'Documents':
 	        ev.number = exhibitnumber
 		exhibitnumber += 1
-		ev.description
+		ev.evidencestatement = "See Exhibit " 
+		ev.evidencestatement += str(ev.number)
+		ev.evidencestatement += ": "
+		ev.evidencestatement += str(ev.title)
 	      if ev.typeofevidence == 'Testimony':
 	        ev.number = affidavitnumber
 		affidavitnumber += 1
-	    
+		ev.evidencestatement = "See Affidavit Paragraph " 
+		ev.evidencestatement += str(ev.number)
+	      if ev.typeofevidence == 'plaintiffevidence':
+	        ev.evidencestatement = "See Plaintiff's "
+		if 
+		ev.evidencestatement += str(ev.number)
 ```
 
 ### Nested methods<a name="nestedmethods"></a>
