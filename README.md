@@ -197,7 +197,7 @@ fields:
       - Eviction: recB0J8H7GkpRuQ80
 ---
 code: |
-  legalobjects.append(object_from_a_id(atid))
+  legalobjects.append(object_from_a_id(a_id))
   legalobjects.gathered = True
 ---
 ```
