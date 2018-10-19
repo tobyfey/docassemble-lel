@@ -504,6 +504,14 @@ def fact_from_a_id(a_id):
 		funcobject.explanationifmet = el['fields']['explanationifmet']
 	if 'explanationifnotmet' in el['fields']:
 		funcobject.explanationifnotmet = el['fields']['explanationifnotmet']
+	if 'prefact' in el['fields']:
+		funcobject.prefact = el['fields']['prefact']
+	else:
+		funcobject.prefact = ""
+	if 'postfact' in el['fields']:
+		funcobject.postfact = el['fields']['postfact']
+	else:
+		funcobject.postfact = ""
 	return funcobject
 ```
 ### Fact Object Questions<a name="factobjectquestions"></a>
@@ -810,7 +818,7 @@ Defendant incorporates all prior paragraphs in the following defense.
 % for fact in legalobject.facts:
 1. ${ fact.prefact }${ fact.description }${ fact.postfact }
 % for evidence in legalobject.evidencelist:
-${ fact.exhibit }
+${ evidence.evidencestatement }
 % endfor
 % endfor
 1. ${ legalobject.conclusion }
@@ -1011,8 +1019,11 @@ code: |
 		ev.evidencestatement += str(ev.number)
 	      if ev.typeofevidence == 'plaintiffevidence':
 	        ev.evidencestatement = "See Plaintiff's "
-		if 
-		ev.evidencestatement += str(ev.number)
+		if ev.paragraphOrExhibit == 'paragraph':
+		  ev.evidencestatement += " Paragraph "
+		else:
+		  ev.evidencestatement += " Exhibit "
+		ev.evidencestatement += str(ev.poenumber)
 ```
 
 ### Nested methods<a name="nestedmethods"></a>
