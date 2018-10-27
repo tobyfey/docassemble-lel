@@ -572,6 +572,8 @@ This section has the different ways a Fact Object List can be met, because of an
 
 This list can be added to any time a different type of interaction is needed.  By keeping this section flexible and human readable, we can scale this project as needed to different kinds of information.
 
+Fact Objects and yesnowide vs noyeswide - a Fact Object that is a yes or no question should usually be asked in a way where the "Yes" answer means the tenant wins.  So "Did you pay rent on time?" would be a yesnowide, because a yes answer would be a good defense.  "Did you pay your rent late?"  would be a noyeswide, because a no answer would be a good defense.
+
 1. Equals - if two of the fact objects are the same
 1. 2AllTrue - if both fact objects are true
 1. 1AllTrue - if the only fact object is true
