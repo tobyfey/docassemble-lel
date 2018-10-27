@@ -1,3 +1,5 @@
+USE ONLY ONE PLAYGROUND WINDOW, ACROSS ALL DEVICES, AT A TIME!!!  OTHERWISE LOSE YOUR WORK!
+
 # Table of contents
 1. [Initial Blocks](#initialblocks)
 	1. [Imports and Metadata](#importsandmetadata)
