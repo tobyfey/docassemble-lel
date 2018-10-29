@@ -6,3 +6,5 @@ A docassemble extension.
 
 tgrytafey@gmail.com
 
+Uses code from AirTable Python Wrapper
+https://github.com/gtalarico/airtable-python-wrapper
