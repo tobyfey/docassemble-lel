@@ -1,0 +1,450 @@
+metadata:
+  title: Eviction Fighter
+  short title: evictionfighter
+---
+modules:
+  - docassemble.base.util
+  - .airtable
+  - .auth
+  - .params
+  - .legalobject
+---
+imports:
+  - requests
+  - yaml
+  - json
+  - datetime
+---
+objects:
+  - legalobjects: LegalObjectList.using(object_type=LegalObject,auto_gather=False)
+  - answerlist: DAList
+  - defenseslist: DAList
+  - remedieslist: DAList
+  - exhibitlist: DAList
+  - affidavitlist: DAList
+  - findingsoffactlist: DAList
+  - conclusionsoflawlist: DAList
+  - toolslist: DAList
+  - evidencelist: EvidenceList
+---
+generic object: LegalObject
+objects:
+  - x.children: LegalObjectList.using(object_type=LegalObject,auto_gather=False)
+  - x.facts: FactObjectList.using(object_type=FactObject,auto_gather=False)
+---
+generic object: FactObject
+objects:
+  - x.evidence: EvidenceList.using(object_type=Evidence,auto_gather=False)
+---
+mandatory: True
+code: |
+  legalobjects.auto_gather = False
+  answerlist.auto_gather = False
+  defenseslist.auto_gather = False
+  remedieslist.auto_gather = False
+  exhibitlist.auto_gather = False
+  affidavitlist.auto_gather = False
+  findingsoffactlist.auto_gather = False
+  conclusionsoflawlist.auto_gather = False
+  toolslist.auto_gather = False
+  remedieslist.gathered = True
+  exhibitlist.gathered = True
+  affidavitlist.gathered = True
+  findingsoffactlist.gathered = True
+  conclusionsoflawlist.gathered = True
+  toolslist.gathered = True
+  answerlist.gathered = True
+  defenseslist.gathered = True
+  evidencelist.auto_gather = False
+  evidencelist.gathered = True
+---
+question: Type of Housing
+field: typeofhousing
+default: A1 Private Housing
+choices:
+  - A1 Private Housing
+  - A2 Mobile Home Lot Rental
+  - A3 Section 8 Certificates and Vouchers
+  - A4 HUD Subsidized Projects
+  - A5 Moderate Rehabilitation Projects
+  - A6 Project-Based Certificate Projects
+  - A7 Rural Housing Service Projects
+  - A8 Public Housing
+---
+question: |
+  What is the legal action?
+fields:
+  - Type: a_id
+    input type: radio
+    choices:
+      - Eviction: recB0J8H7GkpRuQ80
+---
+code: |
+  legalobjects.append(object_from_a_id(a_id))
+  legalobjects.gathered = True
+---
+generic object: LegalObject
+code: |
+  for atid in x.childrenlist:
+    tempobject = object_from_a_id(atid)
+    if tempobject.active:
+      if typeofhousing in tempobject.typeofhousing:
+        x.children.append(tempobject,set_instance_name=True)
+  x.children.gathered = True
+---
+generic object: LegalObject
+question:  ${ x.label }
+subquestion: |
+  % if hasattr(x,'explanation'):
+  ${ x.explanation }
+  % endif
+  
+  % if hasattr(x,'question'):
+  ${ x.question }
+  % endif
+  
+fields:
+  - no label: x.childrendict
+    datatype: checkboxes
+    code: x.questioncode()
+---
+generic object: LegalObject
+sets: x.children[0].isrelevant
+code: |
+  for chi in x.children:
+    if x.childrendict[chi.id]:
+      chi.isrelevant = True
+    else:
+      chi.isrelevant = False
+---
+generic object: LegalObject
+code: |
+  if not hasattr(x, 'factslist') or x.facts.ismet:
+    if not hasattr(x, 'childrenlist') or x.children.ismet:
+      x.ismet = True
+    else:
+      x.ismet = False
+      if 'Answer' in x.pleadingsection:
+        answerlist.append(x)
+      elif 'AffirmativeDefense' in x.pleadingsection:
+        defenseslist.append(x)
+      conclusionsoflawlist.append(x)
+  else:
+    if not hasattr(x, 'childrenlist'):
+      x.ismet = False
+      if 'Answer' in x.pleadingsection:
+        answerlist.append(x)
+      elif 'AffirmativeDefense' in x.pleadingsection:
+        defenseslist.append(x)
+      conclusionsoflawlist.append(x)
+    else:
+      if x.children.ismet:
+        x.ismet = True
+      else:
+        x.ismet = False
+        if 'Answer' in x.pleadingsection:
+          answerlist.append(x)
+        elif 'AffirmativeDefense' in x.pleadingsection:
+          defenseslist.append(x)
+        conclusionsoflawlist.append(x)
+---
+generic object: LegalObject
+code: |
+  if hasattr(x,"isrelevant") and x.isrelevant:
+    if not x.ismet and x.pleadingsection == "AffirmativeDefense" and not x in defenseslist:
+      defenseslist.append(x)
+      defenseslist.gathered = True
+    if not x.ismet and x.pleadingsection == "Answer" and not x in answerlist:
+      answerlist.append(x)
+      defenseslist.gathered = True
+---
+generic object: LegalObjectList
+code: |
+  counter = 0
+  for legalobject in x:
+		if legalobject.isrelevant and not legalobject.ismet:
+		  x.ismet = False
+    else:
+      counter += 1
+  if counter == len(x):
+    x.ismet = True
+  else:
+    x.ismet = False
+	
+---
+generic object: LegalObject
+sets: 
+  - x.facts
+code: |
+  if hasattr(x,'factslist'):
+    x.facts.there_are_any = True
+    for fid in x.factslist:
+      x.facts.append(fact_from_a_id(fid),set_instance_name=True)
+    x.facts.there_is_another = False
+---
+generic object: FactObjectList
+sets: x[0]
+question:  ${ x.label }
+subquestion: |
+  ${ x.explanation }
+  
+  ${ x.question }
+
+  % if hasattr(x,'html'):
+  ${ x.html }
+  % endif
+  
+  
+fields:
+  code: x.questioncode()
+---
+
+generic object: FactObject
+code: |
+  x.factstatement = str(x.prefact)
+  if x.datatype == 'text':
+    x.factstatement += str(x.value)
+  elif x.datatype == 'date':
+    x.factstatement += as_datetime(x.value)
+  elif x.datatype == 'currency':
+    x.factstatement += str(x.value)
+  x.factstatement += str(x.postfact)
+---
+generic object: FactObjectList
+sets:
+  - x.ismet
+code: |
+  if x.comparisontype == "Equals":
+		if x[0].value == x[1].value:
+			x.ismet = True
+		else:
+      if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+			  x.ismet = False
+  if x.comparisontype == "2AllTrue":
+    if x[0].value and x[1].value:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+          x.ismet = False
+    else:
+      x.ismet = True
+  if x.comparisontype == "1AllTrue":
+    if x[0].value:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        x.ismet = False
+    else:
+      x.ismet = True
+  if x.comparisontype == "3AllTrue":
+    if x[0].value and x[1].value and x[2].value:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+          if x[2].evidence.typeofevidencedefault == "NA" or x[2].evidence[0].typeofevidence:
+            x.ismet = False
+    else:
+      x.ismet = True
+  if x.comparisontype == "4AnyTrue":
+    if x[0].value or x[1].value or x[2].value or x[3].value:
+      for fact in x:
+        if fact.value:
+          if fact.evidence.typeofevidencedefault == "NA" or fact.evidence[0].typeofevidence:
+            x.ismet = False
+    else:
+      x.ismet = True
+  if x.comparisontype == "CompareDate":
+    tempdate0 = as_datetime(x[0].value)
+    tempdate1 = as_datetime(x[1].value)
+    tempdate2 = as_datetime(x[2].value)
+    if tempdate0.plus(days=3) >= tempdate1 or tempdate1 < tempdate2:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+          if x[2].evidence.typeofevidencedefault == "NA" or x[2].evidence[0].typeofevidence:
+            x.ismet = False
+    else:
+      x.ismet = True
+  if x.comparisontype == "CompareDateAmount":
+    if as_datetime(x[0].value) >= as_datetime(x[2].value):
+      if x[1].value <= x[3].value:
+        if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+          if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+            if x[2].evidence.typeofevidencedefault == "NA" or x[2].evidence[0].typeofevidence:
+              if x[3].evidence.typeofevidencedefault == "NA" or x[3].evidence[0].typeofevidence:
+                x.ismet = False
+      else:
+        x.ismet = True
+    else:
+      x.ismet = True
+---
+generic object: FactObject
+code: |
+  if hasattr(x,'evidence') and not x.evidence.typeofevidencedefault == "NA":
+    x.evidence.there_are_any = True
+  else:
+    x.evidence.there_are_any = False
+---
+generic object: Evidence
+code: |
+  if hasattr(x, 'typeofevidence'):
+    evidencelist.append(x)
+  evidencelist.gathered = True
+
+---
+generic object: FactObject
+sets: x.evidence[i].typeofevidence
+question: How can you prove ${ x.evidence.label }?
+subquestion: |
+  ${ x.evidence.explanation }
+  
+  ${ x.evidence.question }
+
+  % if hasattr(x,'evidence.html'):
+  ${ x.evidence.html }
+  % endif
+fields:
+ - Evidence already included: x.evidence[i]
+   datatype: object
+   show if: 
+     code: |
+       len(evidencelist) > 0
+   choices: evidencelist
+ - Type of evidence: x.evidence[i].typeofevidence
+   input type: radio
+   required: True
+   choices:
+     - Documents: documents
+     - Photographs: documents
+     - Plaintiff's evidence: plaintiffevidence
+     - Witness testimony: witnesstestimony
+     - Your testimony: testimony
+   default: x.evidence.typeofevidencedefault
+ - Title: x.evidence[i].title
+   show if:
+     variable: x.evidence[i].typeofevidence
+     is: documents
+ - Paragraph in complaint or Exhibit?: x.evidence[i].paragraphOrExhibit
+   choices:
+     - Paragraph
+     - Exhibit
+   show if:
+     variable: x.evidence[i].typeofevidence
+     is: plaintiffevidence
+ - Number?: x.evidence[i].poenumber
+   datatype: integer
+   show if:
+     variable: x.evidence[i].typeofevidence
+     is: plaintiffevidence 
+ - Describe: x.evidence[i].testimony
+   datatype: area
+   show if:
+     variable: x.evidence[i].typeofevidence
+     is: testimony 
+ - More evidence: x.evidence.there_is_another
+   datatype: yesno
+ - Don't Add to evidence list?: evidencelist.gathered
+   datatype: yesno
+---
+question: Questions for the Caption
+fields:
+  - Name of Court in All Caps: courtNameAC
+    default: Default Municipal Court
+  - County in All Caps: countyAC
+    default: BUTLER
+  - Plaintiff: plaintiff
+    default: Larry Landlord
+  - Defendant: defendant
+    default: Terry Tenant
+  - Case Number: casenumber
+    default: 18-CVG-99999
+  - Judge: judge
+    required: False
+  - Title: title
+    default: Answer
+---
+question: Questions for the Signature
+fields:
+  - Defendant street address: defendantstreetaddress
+    default: 123 Main St.
+  - Defendant City State Zip: defendantcitystatezip
+    default: Default, OH 43611
+  - Defendant Phone Number: defendantphonenumber
+    required: False
+  - Lawyer: lawyer
+    default: Larry Lawyer
+  - Lawyer street address: lawyerstreetaddress 
+    default: 321 High St.
+  - Lawyer City State Zip: lawyercitystatezip
+    default: Suburbs, OH 43666
+---
+generic object: FactObject
+code: x.value = value(x.field)
+---
+code: |
+  exhibitnumber = 1
+  affidavitnumber = 1
+  indexnumbercounter = 1
+---
+code: |
+  sortedanswers = sorted(answerlist, key=lambda x:x.strength)
+  sorteddefenses = sorted(defenseslist, key=lambda x:x.strength)
+  for sd in sorteddefenses:
+    sd.indexnumber = indexnumbercounter
+    indexnumbercounter += 1
+  totalanswers = sortedanswers + sorteddefenses
+  for sa in totalanswers:
+    sa.newattribute = "New"
+    if hasattr(sa,'facts'):
+      sa.newattributefact = "Facts"
+      for fact in sa.facts:
+        if hasattr(fact,'evidence'):
+          sa.newattributeevidence = "evidence"
+	        for ev in fact.evidence:
+	          if hasattr(ev,'number'):
+              sa.newattributeevidencenumber = "evidencenumber"
+	            pass
+	          else:
+	            if ev.typeofevidence == 'documents':
+	              ev.number = exhibitnumber
+		            exhibitnumber += 1
+		            ev.evidencestatement = "See Exhibit " 
+		            ev.evidencestatement += str(ev.number)
+		            ev.evidencestatement += ": "
+		            ev.evidencestatement += str(ev.title)
+                ev.evidencestatement += "."
+                exhibitlist.append(ev)
+	            elif ev.typeofevidence == "testimony":
+	              ev.number = affidavitnumber
+		            affidavitnumber += 1
+		            ev.evidencestatement = "See Affidavit Paragraph " 
+		            ev.evidencestatement += str(ev.number)
+                ev.evidencestatement += "."
+                affidavitlist.append(ev)
+	            elif ev.typeofevidence == 'plaintiffevidence':
+	              ev.evidencestatement = "See Plaintiff's "
+		            if ev.paragraphOrExhibit == 'Paragraph':
+		              ev.evidencestatement += " Paragraph "
+		            else:
+		              ev.evidencestatement += " Exhibit "
+		            ev.evidencestatement += str(ev.poenumber)
+                ev.evidencestatement += "."
+              else:
+                pass
+---
+generic object: LegalObject
+code: |
+  x.nestedexplain = x.nested_explain()
+---
+question: Summary
+mandatory: True
+subquestion: |
+
+  % for lo in legalobjects:
+  ${ lo.nestedexplain }
+  
+  % endfor
+
+attachment:
+  - name: Eviction Answer
+    filename: EvictionAnswer
+    content file:
+      - answer.md
+      - affidavit.md
+      - exhibit.md
+---
