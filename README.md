@@ -4,4 +4,6 @@
 ## Develop Multivariate Court Pleadings, Focused on Proving Facts
 ## Part of Growing docassemble Community
 ## Ability for All to Participate and Learn
+## Law & UX Adaptable Across Jurisdictions
+## Ready For Use By Courts
 ## How To Get Started
