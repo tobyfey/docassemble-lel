@@ -7,7 +7,7 @@ modules:
   - .airtable
   - .auth
   - .params
-  - .legalobjectDEV
+  - .legalobject
 ---
 imports:
   - requests
