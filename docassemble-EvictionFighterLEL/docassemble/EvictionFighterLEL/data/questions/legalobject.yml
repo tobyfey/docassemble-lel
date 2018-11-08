@@ -7,7 +7,7 @@ modules:
   - .airtable
   - .auth
   - .params
-  - .legalobject
+  - .legalobjectDEV
 ---
 imports:
   - requests
@@ -30,11 +30,6 @@ objects:
 generic object: LegalObject
 objects:
   - x.children: LegalObjectList.using(object_type=LegalObject,auto_gather=False)
-  - x.facts: FactObjectList.using(object_type=FactObject,auto_gather=False)
----
-generic object: FactObject
-objects:
-  - x.evidence: EvidenceList.using(object_type=Evidence,auto_gather=False)
 ---
 mandatory: True
 code: |
@@ -55,29 +50,55 @@ code: |
   toolslist.gathered = True
   answerlist.gathered = True
   defenseslist.gathered = True
-  evidencelist.auto_gather = False
-  evidencelist.gathered = True
+  evidencelist.auto_gather = True
+  evidencelist.there_are_any = False
 ---
 question: Type of Housing
-field: typeofhousing
-default: A1 Private Housing
-choices:
-  - A1 Private Housing
-  - A2 Mobile Home Lot Rental
-  - A3 Section 8 Certificates and Vouchers
-  - A4 HUD Subsidized Projects
-  - A5 Moderate Rehabilitation Projects
-  - A6 Project-Based Certificate Projects
-  - A7 Rural Housing Service Projects
-  - A8 Public Housing
+fields:
+  - Do you know the type of housing you live in?: typeofhousingknown
+    datatype: yesnowide
+  - Pick a type of housing: typeofhousing
+    show if: typeofhousingknown
+    choices:
+      - A1 Private Housing
+      - A2 Mobile Home Lot Rental
+      - A3 Section 8 Certificates and Vouchers
+      - A4 HUD Subsidized Projects
+      - A5 Moderate Rehabilitation Projects
+      - A6 Project-Based Certificate Projects
+      - A7 Rural Housing Service Projects
+      - A8 Public Housing
+  - What best describes your type of housing?: housingtypedescription
+    hide if: typeofhousingknown
+    choices:
+      - I do not get any type of housing subsidy
+      - I live in a mobile home park
+      - I have a voucher
+      - I live in public housing owned by a housing authority
+      - I live in subsidized housing
+      - Other
+---
+code: |
+  if housingtypedescription == "I do not get any type of housing subsidy":
+    typeofhousing = "A1 Private Housing"
+  if housingtypedescription == "I live in a mobile home park":
+    typeofhousing = "A2 Mobile Home Lot Rental"
+  if housingtypedescription == "I have a voucher":
+    typeofhousing = "A3 Section 8 Certificates and Vouchers"
+  if housingtypedescription == "I live in public housing owned by a housing authority":
+    typeofhousing = "A8 Public Housing"
+---
+code: |
+  if housingtypedescription == "I live in subsidized housing.":
+    housingtype = "A4 HUD Subsidized Projects"
 ---
 question: |
-  What is the legal action?
+  What kind of court case do you need help with?
 fields:
   - Type: a_id
     input type: radio
     choices:
-      - Eviction: recB0J8H7GkpRuQ80
+      - Eviction: recWdo2vahYL2tsdI
 ---
 code: |
   legalobjects.append(object_from_a_id(a_id))
@@ -117,28 +138,26 @@ code: |
     else:
       chi.isrelevant = False
 ---
+code: |
+  base_key = 'appVibGdpOZq6nKPT'
+  table_name = 'Facts'
+  api_response = Airtable(base_key, table_name, api_key='key2jDr134l25QZ9P')
+  factsdict = api_response.get_all()
+  for fact in factsdict:
+    if 'Active' in fact['fields']:
+      if fact['fields']['datatype'] == "yesnowide":
+        define(fact['fields']['fieldold'], True)
+      elif fact['fields']['datatype'] == "noyeswide":
+        define(fact['fields']['fieldold'], False)
+      else:
+        define(fact['fields']['fieldold'], fact['fields']['default'])
+  factsgathered = True
+---
 generic object: LegalObject
 code: |
-  if not hasattr(x, 'factslist') or x.facts.ismet:
-    if not hasattr(x, 'childrenlist') or x.children.ismet:
-      x.ismet = True
-    else:
-      x.ismet = False
-      if 'Answer' in x.pleadingsection:
-        answerlist.append(x)
-      elif 'AffirmativeDefense' in x.pleadingsection:
-        defenseslist.append(x)
-      conclusionsoflawlist.append(x)
-  else:
-    if not hasattr(x, 'childrenlist'):
-      x.ismet = False
-      if 'Answer' in x.pleadingsection:
-        answerlist.append(x)
-      elif 'AffirmativeDefense' in x.pleadingsection:
-        defenseslist.append(x)
-      conclusionsoflawlist.append(x)
-    else:
-      if x.children.ismet:
+  if factsgathered:
+    if not hasattr(x, 'factslist') or x.facts.ismet:
+      if not hasattr(x, 'childrenlist') or x.children.ismet:
         x.ismet = True
       else:
         x.ismet = False
@@ -147,23 +166,35 @@ code: |
         elif 'AffirmativeDefense' in x.pleadingsection:
           defenseslist.append(x)
         conclusionsoflawlist.append(x)
----
-generic object: LegalObject
-code: |
-  if hasattr(x,"isrelevant") and x.isrelevant:
-    if not x.ismet and x.pleadingsection == "AffirmativeDefense" and not x in defenseslist:
-      defenseslist.append(x)
-      defenseslist.gathered = True
-    if not x.ismet and x.pleadingsection == "Answer" and not x in answerlist:
-      answerlist.append(x)
-      defenseslist.gathered = True
+    else:
+      if not hasattr(x, 'childrenlist'):
+        x.ismet = False
+        if 'Answer' in x.pleadingsection:
+          answerlist.append(x)
+        elif 'AffirmativeDefense' in x.pleadingsection:
+          defenseslist.append(x)
+        conclusionsoflawlist.append(x)
+      else:
+        if x.children.ismet:
+          x.ismet = True
+        else:
+          x.ismet = False
+          if 'Answer' in x.pleadingsection:
+            answerlist.append(x)
+          elif 'AffirmativeDefense' in x.pleadingsection:
+            defenseslist.append(x)
+          conclusionsoflawlist.append(x)
+
 ---
 generic object: LegalObjectList
 code: |
   counter = 0
   for legalobject in x:
-		if legalobject.isrelevant and not legalobject.ismet:
-		  x.ismet = False
+    if legalobject.isrelevant and not legalobject.ismet:
+      if legalobject.pleadingsection == "AffirmativeDefense" and not legalobject in defenseslist:
+        defenseslist.append(x)
+      if legalobject.pleadingsection == "Answer" and not legalobject in answerlist:
+        answerlist.append(x)
     else:
       counter += 1
   if counter == len(x):
@@ -181,6 +212,13 @@ code: |
     for fid in x.factslist:
       x.facts.append(fact_from_a_id(fid),set_instance_name=True)
     x.facts.there_is_another = False
+  else:
+    x.facts.there_are_any = False
+---
+generic object: FactObject
+code: |
+  x.name.text = value(x.field)
+
 ---
 generic object: FactObjectList
 sets: x[0]
@@ -241,14 +279,39 @@ code: |
             x.ismet = False
     else:
       x.ismet = True
-  if x.comparisontype == "4AnyTrue":
-    if x[0].value or x[1].value or x[2].value or x[3].value:
-      for fact in x:
-        if fact.value:
-          if fact.evidence.typeofevidencedefault == "NA" or fact.evidence[0].typeofevidence:
-            x.ismet = False
-    else:
+  if x.comparisontype == "2AnyTrue":
+    Any2TrueCounter = 0
+    if not x[0].value and not x[1].value:
       x.ismet = True
+    else:
+      for ctfact in x:
+        if ctfact.value == True:
+          if ctfact.evidence.typeofevidencedefault == "NA" or ctfact.evidence[0].typeofevidence:
+            Any2TrueCounter += 1
+      if Any2TrueCounter > 0:
+        x.ismet = False
+  if x.comparisontype == "3AnyTrue":
+    Any3TrueCounter = 0
+    if not x[0].value and not x[1].value and not x[2]:
+      x.ismet = True
+    else:
+      for ctfact in x:
+        if ctfact.value == True:
+          if ctfact.evidence.typeofevidencedefault == "NA" or ctfact.evidence[0].typeofevidence:
+            Any3TrueCounter += 1
+      if Any3TrueCounter > 0:
+        x.ismet = False
+  if x.comparisontype == "4AnyTrue":
+    Any4TrueCounter = 0
+    if not x[0].value and not x[1].value and not x[2] and not x[3]:
+      x.ismet = True
+    else:
+      for ctfact in x:
+        if ctfact.value == True:
+          if ctfact.evidence.typeofevidencedefault == "NA" or ctfact.evidence[0].typeofevidence:
+            Any4TrueCounter += 1
+      if Any4TrueCounter > 0:
+        x.ismet = False
   if x.comparisontype == "CompareDate":
     tempdate0 = as_datetime(x[0].value)
     tempdate1 = as_datetime(x[1].value)
@@ -260,6 +323,33 @@ code: |
             x.ismet = False
     else:
       x.ismet = True
+  if x.comparisontype == "CompareDate2":
+    tempdate0 = as_datetime(x[0].value)
+    tempdate1 = as_datetime(x[1].value)
+    if tempdate0.plus(years=2) > tempdate1:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+            x.ismet = True
+    else:
+      x.ismet = False
+  if x.comparisontype == "CompareDate3":
+    tempdate0 = as_datetime(x[0].value)
+    tempdate1 = as_datetime(x[1].value)
+    if tempdate0 >= tempdate1:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+            x.ismet = True
+    else:
+      x.ismet = False
+  if x.comparisontype == "CompareDate4":
+    tempdate0 = as_datetime(x[0].value)
+    tempdate1 = as_datetime(x[1].value)
+    if tempdate0.plus(weeks=1) >= tempdate1:
+      x.ismet = True
+    else:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+          x.ismet = False
   if x.comparisontype == "CompareDateAmount":
     if as_datetime(x[0].value) >= as_datetime(x[2].value):
       if x[1].value <= x[3].value:
@@ -272,23 +362,27 @@ code: |
         x.ismet = True
     else:
       x.ismet = True
+    if x.comparisontype == "PercentageComparison":
+      if x[0].value/x[1].value > .2:
+        if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+          if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+            x.ismet = False
+      else:
+        x.ismet = True
 ---
 generic object: FactObject
 code: |
-  if hasattr(x,'evidence') and not x.evidence.typeofevidencedefault == "NA":
+  if hasattr(x,'evidence') and not x.evidence.typeofevidencedefault == "NA" and x.value:
     x.evidence.there_are_any = True
   else:
     x.evidence.there_are_any = False
 ---
-generic object: Evidence
+generic object: FactObject
 code: |
-  if hasattr(x, 'typeofevidence'):
-    evidencelist.append(x)
-  evidencelist.gathered = True
-
+  if hasattr(x.evidence[0],'typeofevidence') or not x.value:
+    x.evidence.there_is_another = False
 ---
 generic object: FactObject
-sets: x.evidence[i].typeofevidence
 question: How can you prove ${ x.evidence.label }?
 subquestion: |
   ${ x.evidence.explanation }
@@ -301,10 +395,8 @@ subquestion: |
 fields:
  - Evidence already included: x.evidence[i]
    datatype: object
-   show if: 
-     code: |
-       len(evidencelist) > 0
-   choices: evidencelist
+   choices: 
+    - evidencelist
  - Type of evidence: x.evidence[i].typeofevidence
    input type: radio
    required: True
@@ -314,7 +406,8 @@ fields:
      - Plaintiff's evidence: plaintiffevidence
      - Witness testimony: witnesstestimony
      - Your testimony: testimony
-   default: x.evidence.typeofevidencedefault
+     - Judicial notice: judicialnotice
+   default: ${ x.evidence.typeofevidencedefault }
  - Title: x.evidence[i].title
    show if:
      variable: x.evidence[i].typeofevidence
@@ -336,10 +429,20 @@ fields:
    show if:
      variable: x.evidence[i].typeofevidence
      is: testimony 
- - More evidence: x.evidence.there_is_another
-   datatype: yesno
- - Don't Add to evidence list?: evidencelist.gathered
-   datatype: yesno
+ - What is the public source if information?: x.evidence[i].publicsource
+   datatype: area
+   default: ${ x.evidence.default }
+   show if:
+     variable: x.evidence[i].typeofevidence
+     is: judicialnotice
+---
+generic object: FactObject
+sets: evidencelist[0]
+code: |
+  if hasattr(x.evidence[i], 'typeofevidence'):
+    evidencelist.append(x.evidence[i])
+  evidencelist.there_is_another = False
+
 ---
 question: Questions for the Caption
 fields:
@@ -379,9 +482,9 @@ code: x.value = value(x.field)
 code: |
   exhibitnumber = 1
   affidavitnumber = 1
-  indexnumbercounter = 1
 ---
 code: |
+  indexnumbercounter = 1
   sortedanswers = sorted(answerlist, key=lambda x:x.strength)
   sorteddefenses = sorted(defenseslist, key=lambda x:x.strength)
   for sd in sorteddefenses:
@@ -424,6 +527,10 @@ code: |
 		              ev.evidencestatement += " Exhibit "
 		            ev.evidencestatement += str(ev.poenumber)
                 ev.evidencestatement += "."
+              elif ev.typeofevidence == 'judicialnotice':
+	              ev.evidencestatement = "The Court may take judicial notice of "
+		            ev.evidencestatement += str(ev.publicsource)
+                ev.evidencestatement += ", as it is a source whose accuracy cannot reasonably be questioned."
               else:
                 pass
 ---
@@ -444,7 +551,7 @@ attachment:
   - name: Eviction Answer
     filename: EvictionAnswer
     content file:
-      - answer.md
-      - affidavit.md
-      - exhibit.md
+      - answerDEV.md
+      - affidavitDEV.md
+      - exhibitDEV.md
 ---
