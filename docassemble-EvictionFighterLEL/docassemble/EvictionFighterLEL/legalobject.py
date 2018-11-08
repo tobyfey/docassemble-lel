@@ -1,9 +1,9 @@
 from docassemble.base.core import DAObject, DAList
-from docassemble.base.util import get_config
+from docassemble.base.util import get_config, Thing
 from docassemble.base.functions import word
 from .airtable import Airtable
 
-base_key =get_config('base key')
+base_key = 'appVibGdpOZq6nKPT'
 api_key=get_config('airtable api key')
 
 def object_from_a_id(a_id):
@@ -132,6 +132,8 @@ def fact_from_a_id(a_id):
 			funcobject.evidence.question = ""
 		if 'typeofevidencedefault' in el['fields']:
 			funcobject.evidence.typeofevidencedefault = el['fields']['typeofevidencedefault']
+		if 'evhint' in el['fields']:
+			funcobject.evidence.default = el['fields']['evhint']
 	return funcobject
 	
 class LegalObject(DAObject):
@@ -196,7 +198,7 @@ class LegalObjectList(DAList):
 			return False
 
 
-class FactObject(DAObject):
+class FactObject(Thing):
 	def ___init___(self, *pargs, **kwargs):
  		self.initializeAttribute('children', LegalObjectList.using(object_type=LegalObject))
 		return super(FactObject, self).init(*pargs, **kwargs)
@@ -225,6 +227,7 @@ class FactObjectList(DAList):
 		return questioncode
 		
 	def nested_fact(self):
+		ff = ""
 		for fact in self:
 			ff = fact.factstatement
 			ff += "\n"
@@ -257,4 +260,3 @@ class EvidenceList(DAList):
 class Evidence(DAObject):
   
 	pass
-
