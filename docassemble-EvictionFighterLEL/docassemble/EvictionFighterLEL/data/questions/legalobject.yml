@@ -551,7 +551,7 @@ attachment:
   - name: Eviction Answer
     filename: EvictionAnswer
     content file:
-      - answerDEV.md
-      - affidavitDEV.md
-      - exhibitDEV.md
+      - answer.md
+      - affidavit.md
+      - exhibit.md
 ---
