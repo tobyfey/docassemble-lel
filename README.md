@@ -17,7 +17,7 @@ We will likely create a database to host the Legal Elements Library eventually. 
 
 ## Legal Elements Library Reinforces Thinking Like A Lawyer
 
-A valid criticism of docassemble is that there is a steep learning curve to using it, despite the excellent documentation and support.  The "object-oriented" nature of the interviews can be complex and seem counter-intuitive.  
+A valid criticism of docassemble is that there is a steep learning curve to using it, despite the excellent documentation and support.  The "object-oriented" nature of the interviews can be complex and seem counter-intuitive.  It can seem backwards becaust that's sort of what it is - docassemble makes you create your solution and then figures out what it needs to ask to get you there.  
 
 There is also a steep learning curve to "thinking like a lawyer" - the first year of law school is often said to be dedicated to learning that skill alone.
 
@@ -28,6 +28,7 @@ But "object-oriented" programming and thinking like a lawyer are essentially the
 One problem with many form answers is that the forms are similar to .  Ohio, like many states, is a "notice-pleading" state, which means that pleadings like complaints and answers only have to allege the existence of facts, not prove them in the pleading.  For attorneys, this works fine, because it   
 
 ## Part of Growing docassemble Community
+
 ## Ability for All to Participate and Learn
 ## Law & UX Adaptable Across Jurisdictions
 
