@@ -786,6 +786,16 @@ code: |
 ---
 ---
 ```
+### fact.value
+
+The .value attributes in the comparison code are created by assigning the value of x.field (which is the variable name) to x.value.
+
+```
+---
+generic object: FactObject
+code: x.value = value(x.field)
+---
+```
 ### Pre-gathering all facts
 To avoid problems with the back button used after questions where the facts are set using code, this section pre-defines all of the fact variables at the beginning of the interview.
 
@@ -936,6 +946,69 @@ class Evidence(DAObject):
 ```
 # Documents<a name="documents"></a>
 ## Answer<a name="answer"></a>
+### Sorting answers and defenses and assigning exhibit and affidavit numbers
+
+This code block is intended to run after it has been determined if legalobjects[0].ismet (whether the eviction case has been met.  It organizes the answers and defenses, sorting the defenses by the .strength attribute.  It puts the answers and defenses into sortedanswers and sorteddefenses, which is referenced in the answer.
+
+It also creates .evidencestatement attributes for evidence objects, which are used in the answer.
+```yaml
+---
+code: |
+  exhibitnumber = 1
+  affidavitnumber = 1
+---
+code: |
+  indexnumbercounter = 1
+  sortedanswers = sorted(answerlist, key=lambda x:x.strength)
+  sorteddefenses = sorted(defenseslist, key=lambda x:x.strength)
+  for sd in sorteddefenses:
+    sd.indexnumber = indexnumbercounter
+    indexnumbercounter += 1
+  totalanswers = sortedanswers + sorteddefenses
+  for sa in totalanswers:
+    sa.newattribute = "New"
+    if hasattr(sa,'facts'):
+      sa.newattributefact = "Facts"
+      for fact in sa.facts:
+        if hasattr(fact,'evidence'):
+          sa.newattributeevidence = "evidence"
+	        for ev in fact.evidence:
+	          if hasattr(ev,'number'):
+              sa.newattributeevidencenumber = "evidencenumber"
+	            pass
+	          else:
+	            if ev.typeofevidence == 'documents':
+	              ev.number = exhibitnumber
+		            exhibitnumber += 1
+		            ev.evidencestatement = "See Exhibit " 
+		            ev.evidencestatement += str(ev.number)
+		            ev.evidencestatement += ": "
+		            ev.evidencestatement += str(ev.title)
+                ev.evidencestatement += "."
+                exhibitlist.append(ev)
+	            elif ev.typeofevidence == "testimony":
+	              ev.number = affidavitnumber
+		            affidavitnumber += 1
+		            ev.evidencestatement = "See Affidavit Paragraph " 
+		            ev.evidencestatement += str(ev.number)
+                ev.evidencestatement += "."
+                affidavitlist.append(ev)
+	            elif ev.typeofevidence == 'plaintiffevidence':
+	              ev.evidencestatement = "See Plaintiff's "
+		            if ev.paragraphOrExhibit == 'Paragraph':
+		              ev.evidencestatement += " Paragraph "
+		            else:
+		              ev.evidencestatement += " Exhibit "
+		            ev.evidencestatement += str(ev.poenumber)
+                ev.evidencestatement += "."
+              elif ev.typeofevidence == 'judicialnotice':
+	              ev.evidencestatement = "The Court may take judicial notice of "
+		            ev.evidencestatement += str(ev.publicsource)
+                ev.evidencestatement += ", as it is a source whose accuracy cannot reasonably be questioned."
+              else:
+                pass
+---
+```
 ### Caption<a name="caption"></a>
 
 <img width="600" src="img/captionquestions.jpg">
@@ -1021,23 +1094,10 @@ Unless Defendant specifically admits the allegations made by Plaintiff in the Co
 Unless Defendant specifically admits the allegations made by Plaintiff in the Complaint, Defendant denies the allegations in the Complaint.
 
 
-% if relevantlegalobjects[0].children[0].isrelevant and not relevantlegalobjects[0].children[0].ismet:
-1. Defendant denies that Plaintiff has standing to file this eviction action.[NEWLINE]
-% else:
-1. Defendant admits that Plaintiff has standing to file this eviction action.[NEWLINE]
-% endif
+% for answer in sortedanswers:
+1. ${ answer.conclusion }
+% endfor
 
-% if relevantlegalobjects[0].children[1].isrelevant and not relevantlegalobjects[0].children[1].ismet:
-1. Defendant denies that Defendant unlawfully and forcibly detains from Plaintiff possession of the described premises.  Defendant lawfully retains possession of the premises because Plaintiff does not have valid grounds to evict.[NEWLINE]
-% else:
-1. Defendant admits that Plaintiff has a valid reason to evict, but should not be granted an eviction for other reasons.[NEWLINE]
-% endif
-
-% if relevantlegalobjects[0].children[2].isrelevant and not relevantlegalobjects[0].children[2].ismet:
-1. Defendant denies that Plaintiff served a valid notice to vacate.[NEWLINE]
-% else:
-1. Defendant admits that Plaintiff served a notice to vacate, but Defendant denies that Plaintiff had a valid reason to do so.[NEWLINE]
-% endif
 
 ```
 
@@ -1046,27 +1106,46 @@ Unless Defendant specifically admits the allegations made by Plaintiff in the Co
 ```markdown
 % if len(metlegalobject) > 0):
 
+
 [BOLDCENTER] AFFIRMATIVE DEFENSES
-% if len(metlegalobject) = 1):
-Defendant incorporates all prior paragraphs in the following defense.
-% else:
-Defendant incorporates all prior paragraphs in the following defense.
-% endif
-% for legalobject in metlegalobjects:
-[BOLDCENTER] AFFIRMATIVE DEFENSE ${ legalobject.indexnumber }
-[BOLDCENTER} ${ legalobject.title }
+
+Defendant incorporates all prior paragraphs in the following defenses.
+
+% for legalobject in sorteddefenses:
+
+[BOLDCENTER] AFFIRMATIVE DEFENSE ${ legalobject.indexnumber } [BR]
+${ legalobject.title }
 
 1. ${ legalobject.law }
 % for fact in legalobject.facts:
-1. ${ fact.prefact }${ fact.description }${ fact.postfact }
-% for evidence in legalobject.evidencelist:
+1. ${ fact.factstatement }
+% for evidence in fact.evidence:
+% if not fact.evidence.typeofevidencedefault == "NA":
 ${ evidence.evidencestatement }
+% endif
 % endfor
 % endfor
 1. ${ legalobject.conclusion }
 % endfor
-% endif
+
+
 ```
+#### .factstatement
+The answer references an attribute of FactObjects called .factstatement.  That attribute is generated by this code block in the interview.
+```yaml
+generic object: FactObject
+code: |
+  x.factstatement = str(x.prefact)
+  if x.datatype == 'text':
+    x.factstatement += str(x.value)
+  elif x.datatype == 'date':
+    x.factstatement += as_datetime(x.value)
+  elif x.datatype == 'currency':
+    x.factstatement += str(x.value)
+  x.factstatement += str(x.postfact)
+---
+```
+
 ### Remedies<a name="remedies"></a>
 
 ```markdown
@@ -1200,82 +1279,64 @@ The summary block in Eviction Fighter should explain in plain english the evicti
 
 Currently, to test, the summary screen will say if sets are populated:
 
-```yaml
+---
+question: Summary
 mandatory: True
-question: Summary 
 subquestion: |
 
-
-  % for rlo in legalobjects:
-  % if rlo.ismet == True:
-  **You will be evicted**
-  % else:
-  **You have a defense to the eviction.**
-  % endif
+  % for lo in legalobjects:
+  ${ lo.nestedexplain }
+  
   % endfor
-  
-  Answer Set:
-  ${ answerset }
-  
-  Defenses Set:
-  $( defensesset }
+
 attachment:
   - name: Eviction Answer
     filename: EvictionAnswer
     content file:
-      - answer.md
-```
+      - answerDEV.md
+      - affidavitDEV.md
+      - exhibitDEV.md
+---
 
 
 The summary block will look for the exhibit and affidavit numbers, forcing this code block to run.  
 
 This block will have to sort the legal objects, first by answer or defense (answer before by defense, and then by strength number ascending.)  Then it will have to go through the legal objects' facts, and then evidence, to put the evidence in order.  The code will assign the page number to the evidence object as an attribute.
 
-```yaml
-generic object: Evidence
-code: |
-  exhibitnumber = 1
-  affidavitnumber = 1
-  sortedanswers = answers.sorted(key = lambda x.strength)
-  sorteddefenses = defenses.sorted(key = lambda x.strength)
-  sortedanswers.extend(sorteddefenses)
-  for sa in sortedanswers:
-    if if hasattr(sa,'facts'):
-      for fact in sa.facts:
-        if hasattr(sa,'evidence'):
-	  for evi in fact.evidence:
-	    if hasattr(sa,'number'):
-	      pass
-	    else:
-	      if ev.typeofevidence == 'Documents':
-	        ev.number = exhibitnumber
-		exhibitnumber += 1
-		ev.evidencestatement = "See Exhibit " 
-		ev.evidencestatement += str(ev.number)
-		ev.evidencestatement += ": "
-		ev.evidencestatement += str(ev.title)
-	      if ev.typeofevidence == 'Testimony':
-	        ev.number = affidavitnumber
-		affidavitnumber += 1
-		ev.evidencestatement = "See Affidavit Paragraph " 
-		ev.evidencestatement += str(ev.number)
-	      if ev.typeofevidence == 'plaintiffevidence':
-	        ev.evidencestatement = "See Plaintiff's "
-		if ev.paragraphOrExhibit == 'paragraph':
-		  ev.evidencestatement += " Paragraph "
-		else:
-		  ev.evidencestatement += " Exhibit "
-		ev.evidencestatement += str(ev.poenumber)
-```
-
 ### Nested methods<a name="nestedmethods"></a>
 
 The nested methods are recursive methods, to build an explanation screen/hand-out 
+
+I convert the method to an attribute - don't know if this is necessary.
+
+```yaml
+---
+generic object: LegalObject
+code: |
+  x.nestedexplain = x.nested_explain()
+---
+```
 
 ```python
 class LegalObject(DAObject):
 
 	def nested_explain(self):
+		fr = ""
+		fr = str(self.label)
+		fr += "\n"
+		if self.ismet:
+			fr += str(self.explanationifmet)
+		else:
+			fr += str(self.explanationifnotmet)
+		fr += "\n"
+		if hasattr(self, 'facts'):
+			self.facts.nested_fact()
+		if hasattr(self, 'children'):
+			for child in self.children:
+				if child.isrelevant:
+					child.nested_explain()
+		return fr
+  
 		
 ```
 
@@ -1283,6 +1344,31 @@ class LegalObject(DAObject):
 class FactObjectList(DAList):
 
 	def nested_fact(self):
+		ff = ""
+		for fact in self:
+			ff = fact.factstatement
+			ff += "\n"
+			if hasattr(self,'evidence'):
+				ff += "You can prove this with "
+				for ev in fact.evidence:
+					if ev.typeofevidence == 'Documents':
+						ff += str(ev.title)
+					elif ev.typeofevidence == 'Testimony':
+						ff += "your testimony."
+					elif ev.typeofevidence == 'plaintiffevidence':
+						ff += "Plaintiff's "
+						if ev.paragraphOrExhibit == 'paragraph':
+							ff += " Paragraph "
+						else:
+							ff += " Exhibit "
+						ff += str(ev.poenumber)
+				ff += "\n"
+		if hasattr(self, 'children'):
+			for child in self.children:
+				if child.isrelevant:
+					ff += child.nested_explain()
+		return ff
+
 		
 ```
 
