@@ -56,7 +56,7 @@ What about remedies and tools?  In this same code block, I guess potential remed
 ```yaml
 metadata:
   title: Eviction Fighter
-  short title: evictionfighter
+  short title: evictionfighter TESTING ONLY
 ---
 modules:
   - docassemble.base.util
@@ -69,13 +69,14 @@ imports:
   - requests
   - yaml
   - json
+  - datetime
 ---
 ```
 Libraries are also imported in legalobject.py
 
 ```python
 from docassemble.base.core import DAObject, DAList
-from docassemble.base.util import get_config
+from docassemble.base.util import get_config, Thing
 from docassemble.base.functions import word
 from .airtable import Airtable
 ```
@@ -85,7 +86,7 @@ from .airtable import Airtable
 Two static variables used for accessing the AirTable are set in legalobject.py.  The airtable api key is set in the config file.  (When I tried to make this variable with underscores instead of spaces, it didn't work.)
 
 ```python
-base_key = 'appA5wMpmdl4Vo8Kb'
+base_key = 'appVibGdpOZq6nKPT'
 api_key=get_config('airtable api key')
 ```
 
@@ -110,14 +111,12 @@ objects:
   - findingsoffactlist: DAList
   - conclusionsoflawlist: DAList
   - toolslist: DAList
+  - evidencelist: EvidenceList
 ---
 generic object: LegalObject
 objects:
   - x.children: LegalObjectList.using(object_type=LegalObject,auto_gather=False)
-  - x.facts: FactObjectList.using(object_type=FactObject,auto_gather=False)
----
-generic object: FactObject
-  - x.evidence: EvidenceList.using(object_type=Evidence,auto_gather=False)
+
 ```
 The classes of Legal Objects are also defined in legalobject.py
 **TODO**
@@ -140,14 +139,16 @@ code: |
   findingsoffactlist.auto_gather = False
   conclusionsoflawlist.auto_gather = False
   toolslist.auto_gather = False
-  answerlist.gathered = True
-  defenseslist.gathered = True
   remedieslist.gathered = True
   exhibitlist.gathered = True
   affidavitlist.gathered = True
   findingsoffactlist.gathered = True
   conclusionsoflawlist.gathered = True
   toolslist.gathered = True
+  answerlist.gathered = True
+  defenseslist.gathered = True
+  evidencelist.auto_gather = True
+  evidencelist.there_are_any = False
 ---
 ```
 
@@ -163,18 +164,45 @@ Currently, we only have a simple list of housing types.  The same list makes the
 This section can also be reworked so [typeofhousing] is set with a series of easy to use questions.
 
 ```yaml
+---
 question: Type of Housing
-field: typeofhousing
-default: A1 Private Housing
-choices:
-  - A1 Private Housing
-  - A2 Mobile Home Lot Rental
-  - A3 Section 8 Certificates and Vouchers
-  - A4 HUD Subsidized Projects
-  - A5 Moderate Rehabilitation Projects
-  - A6 Project-Based Certificate Projects
-  - A7 Rural Housing Service Projects
-  - A8 Public Housing
+fields:
+  - Do you know the type of housing you live in?: typeofhousingknown
+    datatype: yesnowide
+  - Pick a type of housing: typeofhousing
+    show if: typeofhousingknown
+    choices:
+      - A1 Private Housing
+      - A2 Mobile Home Lot Rental
+      - A3 Section 8 Certificates and Vouchers
+      - A4 HUD Subsidized Projects
+      - A5 Moderate Rehabilitation Projects
+      - A6 Project-Based Certificate Projects
+      - A7 Rural Housing Service Projects
+      - A8 Public Housing
+  - What best describes your type of housing?: housingtypedescription
+    hide if: typeofhousingknown
+    choices:
+      - I do not get any type of housing subsidy
+      - I live in a mobile home park
+      - I have a voucher
+      - I live in public housing owned by a housing authority
+      - I live in subsidized housing
+      - Other
+---
+code: |
+  if housingtypedescription == "I do not get any type of housing subsidy":
+    typeofhousing = "A1 Private Housing"
+  if housingtypedescription == "I live in a mobile home park":
+    typeofhousing = "A2 Mobile Home Lot Rental"
+  if housingtypedescription == "I have a voucher":
+    typeofhousing = "A3 Section 8 Certificates and Vouchers"
+  if housingtypedescription == "I live in public housing owned by a housing authority":
+    typeofhousing = "A8 Public Housing"
+---
+code: |
+  if housingtypedescription == "I live in subsidized housing.":
+    housingtype = "A4 HUD Subsidized Projects"
 ---
 ```
 
@@ -295,10 +323,9 @@ def object_from_a_id(a_id):
 		funcobject.explanationifnotmet = el['fields']['explanationifnotmet']
 	if 'follabel' in el['fields']:
 		funcobject.initializeAttribute('facts', FactObjectList)
+		funcobject.facts.label = el['fields']['follabel']
 	if 'folhtml' in el['fields']:
 	   funcobject.facts.html = el['fields']['folhtml']
-	if 'follabel' in el['fields']:
-		funcobject.facts.label = el['fields']['follabel']
 	if 'folexplanation' in el['fields']:
 		funcobject.facts.explanation = el['fields']['folexplanation']
 	if 'folquestion' in el['fields']:
@@ -363,7 +390,7 @@ Here is an example of asking if the children of a child legal object are relevan
 
 #### Converting dict to attributes<a name="convertingdicttoattributes"></a>
 
-This is what causes .isrelevant to seem backwards - the user picks a child legal object to investigate by unclicking the checkbox, rather than clicking it.
+True and False can be switched in order to allow the following type of interaction- the user picks a child legal object to investigate by unclicking the checkbox, rather than clicking it.
 
 ```yaml
 generic object: LegalObject
@@ -371,9 +398,9 @@ sets: x.children[0].isrelevant
 code: |
   for chi in x.children:
     if x.childrendict[chi.id]:
-      chi.isrelevant = False
-    else:
       chi.isrelevant = True
+    else:
+      chi.isrelevant = False
 ---
 ```
 
@@ -385,20 +412,40 @@ This section will need to add the legalobject to the answer or affirmative defen
 
 
 ```yaml
+---
 generic object: LegalObject
 code: |
-  if not hasattr(x, 'factslist') or x.facts.ismet:
-    if not hasattr(x, 'childrenlist') or x.children.ismet:
-      x.ismet = True
-      if 'Answer' in x.pleadingsection:
-        answerlist.append(x)
-      elif 'AffirmativeDefense' in x.pleadingsection:
-        defenseslist.append(x)
-      conclusionsoflawlist.append(x)
+  if factsgathered:
+    if not hasattr(x, 'factslist') or x.facts.ismet:
+      if not hasattr(x, 'childrenlist') or x.children.ismet:
+        x.ismet = True
+      else:
+        x.ismet = False
+        if 'Answer' in x.pleadingsection:
+          answerlist.append(x)
+        elif 'AffirmativeDefense' in x.pleadingsection:
+          defenseslist.append(x)
+        conclusionsoflawlist.append(x)
     else:
-      x.ismet = False
-  else:
-    x.ismet = False
+      if not hasattr(x, 'childrenlist'):
+        x.ismet = False
+        if 'Answer' in x.pleadingsection:
+          answerlist.append(x)
+        elif 'AffirmativeDefense' in x.pleadingsection:
+          defenseslist.append(x)
+        conclusionsoflawlist.append(x)
+      else:
+        if x.children.ismet:
+          x.ismet = True
+        else:
+          x.ismet = False
+          if 'Answer' in x.pleadingsection:
+            answerlist.append(x)
+          elif 'AffirmativeDefense' in x.pleadingsection:
+            defenseslist.append(x)
+          conclusionsoflawlist.append(x)
+
+---
 ---
 ```
 
@@ -408,12 +455,16 @@ code: |
 The children LegalObjects are in a LegalObjectList that is an attribute of the parent LegalObject.  LegalObjectLists such as x.children have their own attributes, including ismet.  Whether a LegalObject is met depends on whether x.children.ismet
 
 ```yaml
+---
 generic object: LegalObjectList
 code: |
   counter = 0
   for legalobject in x:
-		if legalobject.isrelevant and not legalobject.ismet:
-		  x.ismet = False
+    if legalobject.isrelevant and not legalobject.ismet:
+      if legalobject.pleadingsection == "AffirmativeDefense" and not legalobject in defenseslist:
+        defenseslist.append(x)
+      if legalobject.pleadingsection == "Answer" and not legalobject in answerlist:
+        answerlist.append(x)
     else:
       counter += 1
   if counter == len(x):
@@ -440,10 +491,10 @@ class LegalObject(DAObject):
 What is the problem with the fact.field label?  Why can't I do that through an alias?  I made a change in fact_from_aid that may work
 
 ```python
-class FactObject(DAObject):
+class FactObject(Thing):
 	def ___init___(self, *pargs, **kwargs):
-		self.initializeAttribute('children', LegalObjectList.using(object_type=LegalObject))
-		return super(LegalObject, self).init(*pargs, **kwargs)
+ 		self.initializeAttribute('children', LegalObjectList.using(object_type=LegalObject))
+		return super(FactObject, self).init(*pargs, **kwargs)
 
 ```
 
@@ -461,6 +512,8 @@ code: |
     for fid in x.factslist:
       x.facts.append(fact_from_a_id(fid),set_instance_name=True)
     x.facts.there_is_another = False
+  else:
+    x.facts.there_are_any = False
 ---
 ```
 
@@ -470,6 +523,8 @@ FactObjects are populated from a different AirTable than Elements.  This also se
 I replaced funcobject.field = el['fields']['field'] with funcobject.field = funcobject.instanceName
 Maybe that will allow me to not have to write in instance names in the field
 
+Fact Objects do not have children themselves, but are part of a legal object that can have both facts and children.
+
 <img width="600" src="img/airtablefacts.jpg">
 
 ```python
@@ -478,7 +533,7 @@ def fact_from_a_id(a_id):
 	table_name = 'Facts'
 	api_response = Airtable(base_key, table_name, api_key)
 	el = api_response.get(a_id)
-	funcobject.field = funcobject.instanceName
+	funcobject.field = el['fields']['fieldold']
 	funcobject.label = el['fields']['label']
 	funcobject.id = el['id']
 	funcobject.datatype = el['fields']['datatype']
@@ -492,8 +547,6 @@ def fact_from_a_id(a_id):
 		funcobject.default = el['fields']['default']
 	if 'note' in el['fields']:
 		funcobject.note = el['fields']['note']
-	if 'children' in el['fields']:
-		funcobject.childrenlist = el['fields']['children']
 	if 'parent' in el['fields']:
 		funcobject.parent = el['fields']['parent'][0]
 	if 'question' in el['fields']:
@@ -514,6 +567,25 @@ def fact_from_a_id(a_id):
 		funcobject.postfact = el['fields']['postfact']
 	else:
 		funcobject.postfact = ""
+	if 'typeofevidence' in el['fields'] and not el['fields']['typeofevidence'] == 'NA':
+		funcobject.initializeAttribute('evidence', EvidenceList.using(object_type=Evidence))
+		funcobject.evidence.typeofevidence = el['fields']['typeofevidence']
+		if 'evlabel' in el['fields']:
+			funcobject.evidence.label = el['fields']['evlabel']
+		else:
+			funcobject.evidence.label = ""
+		if 'evexplanation' in el['fields']:
+			funcobject.evidence.explanation = el['fields']['evexplanation']
+		else:
+			funcobject.evidence.explanation = ""
+		if 'evquestion' in el['fields']:
+			funcobject.evidence.question = el['fields']['evquestion']
+		else:
+			funcobject.evidence.question = ""
+		if 'typeofevidencedefault' in el['fields']:
+			funcobject.evidence.typeofevidencedefault = el['fields']['typeofevidencedefault']
+		if 'evhint' in el['fields']:
+			funcobject.evidence.default = el['fields']['evhint']
 	return funcobject
 ```
 ### Fact Object Questions<a name="factobjectquestions"></a>
@@ -551,7 +623,7 @@ class FactObjectList(DAList):
 		questioncode = []
 		for factt in self:
 			adict = {}
-			adict['field'] = factt.instanceName
+			adict['field'] = factt.field
 			adict['label'] = factt.label
 			adict['datatype'] = factt.datatype
 			if hasattr(factt,'help'):
@@ -584,54 +656,176 @@ Fact Objects and yesnowide vs noyeswide - a Fact Object that is a yes or no ques
 1. CompareDate
 1. CompareDateAmount
 
+ADD LINK TO AIRTABLE FOR COMPARISONTYPE
+
 **This section will have to add facts to sets for exhibit lists, affidavit and findings of fact.**  Should I make a method for this?
 
 ```yaml
+---
 generic object: FactObjectList
 sets:
   - x.ismet
 code: |
   if x.comparisontype == "Equals":
-		if x[0] == x[1]:
+		if x[0].value == x[1].value:
 			x.ismet = True
 		else:
-			x.ismet = False
+      if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+			  x.ismet = False
   if x.comparisontype == "2AllTrue":
-    if x[0] and x[1]:
-      x.ismet = False
+    if x[0].value and x[1].value:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+          x.ismet = False
     else:
       x.ismet = True
   if x.comparisontype == "1AllTrue":
-    if x[0]:
-      x.ismet = False
+    if x[0].value:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        x.ismet = False
     else:
       x.ismet = True
   if x.comparisontype == "3AllTrue":
-    if x[0] and x[1] and x[2]:
-      x.ismet = False
+    if x[0].value and x[1].value and x[2].value:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+          if x[2].evidence.typeofevidencedefault == "NA" or x[2].evidence[0].typeofevidence:
+            x.ismet = False
     else:
       x.ismet = True
-  if x.comparisontype == "4AnyTrue":
-    if x[0] and x[1] and x[2] and x[3]:
+  if x.comparisontype == "2AnyTrue":
+    Any2TrueCounter = 0
+    if not x[0].value and not x[1].value:
       x.ismet = True
     else:
-      x.ismet = False
-  if x.comparisontype == "CompareDate":
-    if x[0].plus(days=3) <= x[1]:
-      x.ismet = True
-    else:
-      x.ismet = False
-  if x.comparisontype == "CompareDateAmount":
-    if x[0] >= x[2]:
-      if x[1] >= x[3]:
+      for ctfact in x:
+        if ctfact.value == True:
+          if ctfact.evidence.typeofevidencedefault == "NA" or ctfact.evidence[0].typeofevidence:
+            Any2TrueCounter += 1
+      if Any2TrueCounter > 0:
         x.ismet = False
+  if x.comparisontype == "3AnyTrue":
+    Any3TrueCounter = 0
+    if not x[0].value and not x[1].value and not x[2]:
+      x.ismet = True
+    else:
+      for ctfact in x:
+        if ctfact.value == True:
+          if ctfact.evidence.typeofevidencedefault == "NA" or ctfact.evidence[0].typeofevidence:
+            Any3TrueCounter += 1
+      if Any3TrueCounter > 0:
+        x.ismet = False
+  if x.comparisontype == "4AnyTrue":
+    Any4TrueCounter = 0
+    if not x[0].value and not x[1].value and not x[2] and not x[3]:
+      x.ismet = True
+    else:
+      for ctfact in x:
+        if ctfact.value == True:
+          if ctfact.evidence.typeofevidencedefault == "NA" or ctfact.evidence[0].typeofevidence:
+            Any4TrueCounter += 1
+      if Any4TrueCounter > 0:
+        x.ismet = False
+  if x.comparisontype == "CompareDate":
+    tempdate0 = as_datetime(x[0].value)
+    tempdate1 = as_datetime(x[1].value)
+    tempdate2 = as_datetime(x[2].value)
+    if tempdate0.plus(days=3) >= tempdate1 or tempdate1 < tempdate2:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+          if x[2].evidence.typeofevidencedefault == "NA" or x[2].evidence[0].typeofevidence:
+            x.ismet = False
+    else:
+      x.ismet = True
+  if x.comparisontype == "CompareDate2":
+    tempdate0 = as_datetime(x[0].value)
+    tempdate1 = as_datetime(x[1].value)
+    if tempdate0.plus(years=2) > tempdate1:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+            x.ismet = True
+    else:
+      x.ismet = False
+  if x.comparisontype == "CompareDate3":
+    tempdate0 = as_datetime(x[0].value)
+    tempdate1 = as_datetime(x[1].value)
+    if tempdate0 >= tempdate1:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+            x.ismet = True
+    else:
+      x.ismet = False
+  if x.comparisontype == "CompareDate4":
+    tempdate0 = as_datetime(x[0].value)
+    tempdate1 = as_datetime(x[1].value)
+    if tempdate0.plus(weeks=1) >= tempdate1:
+      x.ismet = True
+    else:
+      if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+        if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+          x.ismet = False
+  if x.comparisontype == "CompareDateAmount":
+    if as_datetime(x[0].value) >= as_datetime(x[2].value):
+      if x[1].value <= x[3].value:
+        if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+          if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+            if x[2].evidence.typeofevidencedefault == "NA" or x[2].evidence[0].typeofevidence:
+              if x[3].evidence.typeofevidencedefault == "NA" or x[3].evidence[0].typeofevidence:
+                x.ismet = False
       else:
         x.ismet = True
     else:
       x.ismet = True
+    if x.comparisontype == "PercentageComparison":
+      if x[0].value/x[1].value > .2:
+        if x[0].evidence.typeofevidencedefault == "NA" or x[0].evidence[0].typeofevidence:
+          if x[1].evidence.typeofevidencedefault == "NA" or x[1].evidence[0].typeofevidence:
+            x.ismet = False
+      else:
+        x.ismet = True
+---
 ---
 ```
+### Pre-gathering all facts
+To avoid problems with the back button used after questions where the facts are set using code, this section pre-defines all of the fact variables at the beginning of the interview.
+
+```
+---
+code: |
+  base_key = 'appVibGdpOZq6nKPT'
+  table_name = 'Facts'
+  api_response = Airtable(base_key, table_name, api_key='key2jDr134l25QZ9P')
+  factsdict = api_response.get_all()
+  for fact in factsdict:
+    if 'Active' in fact['fields']:
+      if fact['fields']['datatype'] == "yesnowide":
+        define(fact['fields']['fieldold'], True)
+      elif fact['fields']['datatype'] == "noyeswide":
+        define(fact['fields']['fieldold'], False)
+      else:
+        define(fact['fields']['fieldold'], fact['fields']['default'])
+  factsgathered = True
+---
+```
+
 ## Evidence<a name="evidence"></a>
+### Determining whether evidence is relevant
+``` yaml
+---
+generic object: FactObject
+code: |
+  if hasattr(x,'evidence') and not x.evidence.typeofevidencedefault == "NA" and x.value:
+    x.evidence.there_are_any = True
+  else:
+    x.evidence.there_are_any = False
+---
+generic object: FactObject
+code: |
+  if hasattr(x.evidence[0],'typeofevidence') or not x.value:
+    x.evidence.there_is_another = False
+---
+
+```
 ### Asking if there is more evidence<a name="askingevidence"></a>
 
 - Needs to be asked only for facts that are relevant
@@ -650,34 +844,76 @@ I should be able to ask if the evidence was evidence already submitted.
 There will also be a number attribute, to keep track of the exhibit number or affidavit number.
 
 ```yaml
+---
 generic object: FactObject
-sets: x.evidence
-question: How can you prove ${ x.facts.ev }?
+question: How can you prove ${ x.evidence.label }?
 subquestion: |
-  ${ x.evexplanation }
+  ${ x.evidence.explanation }
   
-  ${ x.evquestion }
+  ${ x.evidence.question }
 
-  % if hasattr(x,'html'):
-  ${ x.html }
+  % if hasattr(x,'evidence.html'):
+  ${ x.evidence.html }
   % endif
-  
-  
 fields:
- - Type of evidence: evidencetype
+ - Evidence already included: x.evidence[i]
+   datatype: object
+   choices: 
+    - evidencelist
+ - Type of evidence: x.evidence[i].typeofevidence
    input type: radio
+   required: True
    choices:
      - Documents: documents
      - Photographs: documents
      - Plaintiff's evidence: plaintiffevidence
      - Witness testimony: witnesstestimony
-     - Your testimony: yourtestimony
-   default: x.default
- - Other make: car_make
-    show if:
-      variable: 
-      is: Other
+     - Your testimony: testimony
+     - Judicial notice: judicialnotice
+   default: ${ x.evidence.typeofevidencedefault }
+ - Title: x.evidence[i].title
+   show if:
+     variable: x.evidence[i].typeofevidence
+     is: documents
+ - Paragraph in complaint or Exhibit?: x.evidence[i].paragraphOrExhibit
+   choices:
+     - Paragraph
+     - Exhibit
+   show if:
+     variable: x.evidence[i].typeofevidence
+     is: plaintiffevidence
+ - Number?: x.evidence[i].poenumber
+   datatype: integer
+   show if:
+     variable: x.evidence[i].typeofevidence
+     is: plaintiffevidence 
+ - Describe: x.evidence[i].testimony
+   datatype: area
+   show if:
+     variable: x.evidence[i].typeofevidence
+     is: testimony 
+ - What is the public source if information?: x.evidence[i].publicsource
+   datatype: area
+   default: ${ x.evidence.default }
+   show if:
+     variable: x.evidence[i].typeofevidence
+     is: judicialnotice
 ---
+```
+### evidencelist
+
+Maybe I should get a new name, but the evidencelist is intended to be a list of all evidence that the user submits, and allow them to reuse that evidence for another fact question.
+
+```yaml
+---
+generic object: FactObject
+sets: evidencelist[0]
+code: |
+  if hasattr(x.evidence[i], 'typeofevidence'):
+    evidencelist.append(x.evidence[i])
+  evidencelist.there_is_another = False
+
+
 ```
 ### Evidence Class<a name="evidenceclass"></a>
 
@@ -688,11 +924,13 @@ x.exhibit = x.evexplanation()
 
 ```python
 class EvidenceList(DAList):
-	def ___init___(self, *pargs, **kwargs):
-		return super(LegalObject, self).init(*pargs, **kwargs)
 		
-	def evexplanation(self)
-	
+	pass
+
+class Evidence(DAObject):
+  
+	pass
+
 
 
 ```
