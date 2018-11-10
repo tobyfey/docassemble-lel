@@ -141,7 +141,7 @@ code: |
 code: |
   base_key = 'appVibGdpOZq6nKPT'
   table_name = 'Facts'
-  api_response = Airtable(base_key, table_name, api_key='key2jDr134l25QZ9P')
+  api_response = Airtable(base_key, table_name)
   factsdict = api_response.get_all()
   for fact in factsdict:
     if 'Active' in fact['fields']:
