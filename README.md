@@ -25,11 +25,17 @@ But "object-oriented" programming and thinking like a lawyer are essentially the
 
 ## Develop Multivariate Court Pleadings, Focused on Proving Facts
 
-One problem with many form answers is that the forms are similar to .  Ohio, like many states, is a "notice-pleading" state, which means that pleadings like complaints and answers only have to allege the existence of facts, not prove them in the pleading.  For attorneys, this works fine, because it   
+One problem with many form answers is that the forms are similar to answers attorneys use when they represent tenant defendants.  Ohio, like many states, is a "notice-pleading" state, which means that pleadings like complaints and answers only have to allege the existence of facts, not prove them in the pleading.  For attorneys, this works fine, because it   
 
 ## Part of Growing docassemble Community
+[docassemble](https://docassemble.org/)
+
+[docassemble Toolkit](https://community.lawyer/docassemble)
+
+[HelpSelf Legal](https://www.helpselflegal.com/)
 
 ## Ability for All to Participate and Learn
+
 ## Law & UX Adaptable Across Jurisdictions
 
 Interviews in docassemble and structuring legal information as an object allows for legal localization and internationalization.
@@ -37,4 +43,6 @@ Interviews in docassemble and structuring legal information as an object allows 
 If the same data structure for legal elements is used across jurisdiction, then design improvements for the user interface can easily travel across borders too.
 
 ## Ready For Use By Courts
+
+
 ## How To Get Started
