@@ -3,7 +3,6 @@ from docassemble.base.util import get_config, Thing
 from docassemble.base.functions import word
 from .airtable import Airtable
 
-base_key = 'appVibGdpOZq6nKPT'
 api_key=get_config('airtable api key')
 
 def object_from_a_id(a_id):
